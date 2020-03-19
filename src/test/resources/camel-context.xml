@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Configures the Camel Context-->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+">
+
+    <bean id="basicTransform" class="com.modus.camel.datasonnet.DatasonnetProcessor" init-method="init">
+        <property name="inputMimeType" value="application/json"/>
+        <property name="outputMimeType" value="application/json"/>
+        <property name="datasonnetFile" value="simpleMapping.ds"/>
+    </bean>
+    <bean id="transformXML" class="com.modus.camel.datasonnet.DatasonnetProcessor" init-method="init">
+        <property name="inputMimeType" value="application/xml"/>
+        <property name="outputMimeType" value="application/json"/>
+        <property name="datasonnetFile" value="readXMLExtTest.ds"/>
+    </bean>
+    <bean id="transformCSV" class="com.modus.camel.datasonnet.DatasonnetProcessor" init-method="init">
+        <property name="inputMimeType" value="application/csv"/>
+        <property name="outputMimeType" value="application/json"/>
+        <property name="datasonnetFile" value="readCSVTest.ds"/>
+    </bean>
+    <bean id="datasonnetScript" class="com.modus.camel.datasonnet.DatasonnetProcessor" init-method="init">
+        <property name="inputMimeType" value="application/json"/>
+        <property name="outputMimeType" value="application/json"/>
+        <property name="datasonnetScript" value="{
+                                                    &quot;uid&quot;: payload.userId,
+                                                    &quot;uname&quot;: payload.name,
+                                                    &quot;testVar&quot;: test,
+                                                    &quot;isActive&quot;: isActive,
+                                                    &quot;count&quot;: count
+                                                }"/>
+    </bean>
+    <bean id="namedImports" class="com.modus.camel.datasonnet.DatasonnetProcessor" init-method="init">
+        <property name="inputMimeType" value="application/json"/>
+        <property name="outputMimeType" value="application/json"/>
+        <property name="datasonnetFile" value="namedImports.ds"/>
+    </bean>
+    <bean id="readJava" class="com.modus.camel.datasonnet.DatasonnetProcessor" init-method="init">
+        <property name="inputMimeType" value="application/java"/>
+        <property name="outputMimeType" value="application/json"/>
+        <property name="datasonnetFile" value="readJavaTest.ds"/>
+    </bean>
+    <bean id="writeJava" class="com.modus.camel.datasonnet.DatasonnetProcessor" init-method="init">
+        <property name="inputMimeType" value="application/json"/>
+        <property name="outputMimeType" value="application/java"/>
+        <property name="datasonnetFile" value="writeJavaTest.ds"/>
+    </bean>
+
+    <camelContext id="main" xmlns="http://camel.apache.org/schema/spring">
+        <route id="basicTransform">
+            <from uri="direct:basicTransform"/>
+
+            <setProperty name="test">
+                <constant>HelloWorld</constant>
+            </setProperty>
+            <setProperty name="count">
+                <constant>1</constant>
+            </setProperty>
+            <setProperty name="isActive">
+                <constant>true</constant>
+            </setProperty>
+
+            <process ref="basicTransform"/>
+
+            <to uri="mock:direct:end"/>
+        </route>
+
+        <route id="transformXML">
+            <from uri="direct:transformXML"/>
+            <process ref="transformXML"/>
+            <to uri="mock:direct:end"/>
+        </route>
+
+        <route id="transformCSV">
+            <from uri="direct:transformCSV"/>
+            <process ref="transformCSV"/>
+            <to uri="mock:direct:end"/>
+        </route>
+
+        <route id="datasonnetScript">
+            <from uri="direct:datasonnetScript"/>
+
+            <setProperty name="test">
+                <constant>HelloWorld</constant>
+            </setProperty>
+            <setProperty name="count">
+                <constant>1</constant>
+            </setProperty>
+            <setProperty name="isActive">
+                <constant>true</constant>
+            </setProperty>
+
+            <process ref="datasonnetScript"/>
+
+            <to uri="mock:direct:end"/>
+        </route>
+
+        <route id="namedImports">
+            <from uri="direct:namedImports"/>
+            <process ref="namedImports"/>
+            <to uri="mock:direct:end"/>
+        </route>
+
+        <route id="readJava">
+            <from uri="direct:readJava"/>
+            <process ref="readJava"/>
+            <to uri="mock:direct:end"/>
+        </route>
+
+        <route id="writeJava">
+            <from uri="direct:writeJava"/>
+            <process ref="writeJava"/>
+            <to uri="mock:direct:end"/>
+        </route>
+
+    </camelContext>
+
+</beans>
