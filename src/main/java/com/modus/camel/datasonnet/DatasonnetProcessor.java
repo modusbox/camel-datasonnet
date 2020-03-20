@@ -6,6 +6,7 @@ import com.datasonnet.document.JavaObjectDocument;
 import com.datasonnet.document.StringDocument;
 import com.datasonnet.spi.DataFormatPlugin;
 import com.datasonnet.spi.DataFormatService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.classgraph.ClassGraph;
@@ -101,8 +102,8 @@ public class DatasonnetProcessor implements Processor {
 
         //TODO we need a better solution going forward but for now we just differentiate between Java and text-based formats
         Document payload = inputMimeType.contains("java") ?
-                new JavaObjectDocument(exchange.getMessage().getBody()) :
-                new StringDocument(exchange.getMessage().getBody(java.lang.String.class), inputMimeType);
+                createDocument(exchange.getMessage().getBody(), inputMimeType) :
+                createDocument(exchange.getMessage().getBody(java.lang.String.class), inputMimeType);
 
         Mapper mapper = new Mapper(mapping, jsonnetVars.keySet(), namedImports, true, true);
 
@@ -203,5 +204,36 @@ public class DatasonnetProcessor implements Processor {
 
     public void setDatasonnetScript(String datasonnetScript) {
         this.datasonnetScript = datasonnetScript;
+    }
+
+    private Document createDocument(Object content, String type) throws JsonProcessingException {
+        ObjectMapper jacksonMapper = new ObjectMapper();
+
+        Document document = null;
+        boolean isObject = false;
+        String mimeType = type;
+        String documentContent = content.toString();
+
+        if (mimeType.contains("/xml")) {
+            mimeType = "application/xml";
+        } else if (mimeType.contains("/csv")) {
+            mimeType = "application/csv";
+        } else if (mimeType.contains("/java")) {
+            mimeType = "application/java";
+            isObject = true;
+        } else {
+            mimeType = "application/json";
+            try {
+                JsonNode jsonNode = jacksonMapper.readTree(content.toString());
+                //This is valid JSON
+            } catch (Exception e) {
+                //Not a valid JSON, convert
+                documentContent = jacksonMapper.writeValueAsString(content);
+            }
+        }
+
+        document = isObject ? new JavaObjectDocument(content) : new StringDocument(documentContent, mimeType);
+
+        return document;
     }
 }
