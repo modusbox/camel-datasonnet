@@ -109,6 +109,7 @@ public class DatasonnetProcessor implements Processor {
 
         logger.debug("Variables are: " + jsonnetVars);
         logger.debug("Output mime type is: " + outputMimeType);
+        logger.debug("Document is: " + (payload.canGetContentsAs(String.class) ? payload.getContentsAsString() : payload.getContentsAsObject()));
 
         Document mappedDoc = mapper.transform(payload, jsonnetVars, getOutputMimeType());
         Object mappedBody = mappedDoc.canGetContentsAs(String.class) ? mappedDoc.getContentsAsString() : mappedDoc.getContentsAsObject();
