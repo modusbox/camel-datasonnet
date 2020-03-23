@@ -104,21 +104,42 @@ public class DatasonnetProcessor implements Processor {
         }
 
         //TODO - is there a better way to handle this?
+        Map<String, Object> camelHeaders = exchange.getMessage().getHeaders();
 
-        String headersJson = jacksonMapper.writeValueAsString(exchange.getMessage().getHeaders());
+        Iterator<Map.Entry<String, Object>> entryIterator = camelHeaders.entrySet().iterator();
+
+        while (entryIterator.hasNext()) {
+            Map.Entry<String, Object> entry = entryIterator.next();
+
+            Object headerValue = entry.getValue();
+            String headerClassName = (headerValue != null ? headerValue.getClass().getName() : " NULL ");
+
+            if (headerValue == null || !(headerValue instanceof Serializable)) {
+                logger.debug("Header " + entry.getKey() + " is null or not Serializable : " + headerClassName + " ; removing");
+                entryIterator.remove();
+            }
+        }
+
+        String headersJson = jacksonMapper.writeValueAsString(camelHeaders);
         jsonnetVars.put("headers", new StringDocument(headersJson, "application/json"));
 
-        //TODO we need a better solution going forward but for now we just differentiate between Java and text-based formats
-        Document payload = inputMimeType.contains("java") ?
-                createDocument(exchange.getMessage().getBody(), inputMimeType) :
-                createDocument(exchange.getMessage().getBody(java.lang.String.class), inputMimeType);
+        Object body = exchange.getMessage().getBody();
+        String bodyAsString = exchange.getMessage().getBody(java.lang.String.class);
 
-        Mapper mapper = new Mapper(mapping, jsonnetVars.keySet(), namedImports, true, true);
-
+        logger.debug("Input MIME type is " + inputMimeType);
+        logger.debug("Output MIME type is: " + outputMimeType);
+        logger.debug("(1)Message Body is " + body);
+        logger.debug("(2)Message Body is " + bodyAsString);
         logger.debug("Variables are: " + jsonnetVars);
-        logger.debug("Output mime type is: " + outputMimeType);
+
+        //TODO we need a better solution going forward but for now we just differentiate between Java and text-based formats
+        Document payload = (inputMimeType.contains("java") ?
+                createDocument(body, inputMimeType) :
+                createDocument(bodyAsString, inputMimeType));
+
         logger.debug("Document is: " + (payload.canGetContentsAs(String.class) ? payload.getContentsAsString() : payload.getContentsAsObject()));
 
+        Mapper mapper = new Mapper(mapping, jsonnetVars.keySet(), namedImports, true, true);
         Document mappedDoc = mapper.transform(payload, jsonnetVars, getOutputMimeType());
         Object mappedBody = mappedDoc.canGetContentsAs(String.class) ? mappedDoc.getContentsAsString() : mappedDoc.getContentsAsObject();
 
@@ -223,6 +244,9 @@ public class DatasonnetProcessor implements Processor {
         String mimeType = type;
         String documentContent = content.toString();
 
+        logger.debug("Before create Document Content is: " + documentContent);
+        logger.debug("Before create mimeType is: " + mimeType);
+
         if (mimeType.contains("/xml")) {
             mimeType = "application/xml";
         } else if (mimeType.contains("/csv")) {
@@ -234,12 +258,16 @@ public class DatasonnetProcessor implements Processor {
             mimeType = "application/json";
             try {
                 JsonNode jsonNode = jacksonMapper.readTree(content.toString());
+                logger.debug("Content is valid JSON");
                 //This is valid JSON
             } catch (Exception e) {
                 //Not a valid JSON, convert
+                logger.debug("Content is not valid JSON, converting to JSON string");
                 documentContent = jacksonMapper.writeValueAsString(content);
             }
         }
+
+        logger.debug("Document Content is: " + documentContent);
 
         document = isObject ? new JavaObjectDocument(content) : new StringDocument(documentContent, mimeType);
 
