@@ -9,6 +9,7 @@ import com.datasonnet.spi.DataFormatService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.Resource;
 import io.github.classgraph.ResourceList;
@@ -78,6 +79,8 @@ public class DatasonnetProcessor implements Processor {
         }
 
         ObjectMapper jacksonMapper = new ObjectMapper();
+        jacksonMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+
         Map<String, Document> jsonnetVars = new HashMap<>();
 
         for (String varName : exchange.getProperties().keySet()) {
@@ -101,6 +104,7 @@ public class DatasonnetProcessor implements Processor {
         }
 
         //TODO - is there a better way to handle this?
+
         String headersJson = jacksonMapper.writeValueAsString(exchange.getMessage().getHeaders());
         jsonnetVars.put("headers", new StringDocument(headersJson, "application/json"));
 
