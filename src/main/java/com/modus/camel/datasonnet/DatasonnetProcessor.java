@@ -30,6 +30,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
 import java.util.*;
 
 public class DatasonnetProcessor implements Processor {
@@ -48,23 +50,24 @@ public class DatasonnetProcessor implements Processor {
     private String datasonnetScript;
 
     public void process(Exchange exchange) throws Exception {
-
-        //Try to auto-detect input mime type
-        String overriddenInputMimeType = (String) exchange.getIn().getHeader(Exchange.CONTENT_TYPE, (String) exchange.getIn().getHeader("mimeType", "UNKNOWN_MIME_TYPE"));
-        if (!"UNKNOWN_MIME_TYPE".equalsIgnoreCase(overriddenInputMimeType) && overriddenInputMimeType != null) {
-            inputMimeType = overriddenInputMimeType;
+        if (inputMimeType == null || "".equalsIgnoreCase(inputMimeType.trim())) {
+            //Try to auto-detect input mime type if it was not explicitly set
+            String overriddenInputMimeType = (String) exchange.getIn().getHeader(Exchange.CONTENT_TYPE, (String) exchange.getIn().getHeader("mimeType", "UNKNOWN_MIME_TYPE"));
+            if (!"UNKNOWN_MIME_TYPE".equalsIgnoreCase(overriddenInputMimeType) && overriddenInputMimeType != null) {
+                inputMimeType = overriddenInputMimeType;
+            }
         }
         if (!supportedMimeTypes.contains(inputMimeType)) {
             logger.warn("Input Mime Type " + inputMimeType + " is not supported or suitable plugin not found, using application/json");
             inputMimeType = "application/json";
         }
-        logger.debug("Input mime type is: " + inputMimeType);
+        //logger.debug("Input mime type is: " + inputMimeType);
 
         if (!supportedMimeTypes.contains(outputMimeType)) {
             logger.warn("Output Mime Type " + outputMimeType + " is not supported or suitable plugin not found, using application/json");
             outputMimeType = "application/json";
         }
-        logger.debug("Output mime type is: " + outputMimeType);
+        //logger.debug("Output mime type is: " + outputMimeType);
 
         String mapping = "{}";
 
@@ -96,7 +99,7 @@ public class DatasonnetProcessor implements Processor {
                     varValueStr = jacksonMapper.writeValueAsString(varValueStr);
                 }
                 //TODO - how do we support Java, XML and CSV properties?
-                jsonnetVars.put(varName, new StringDocument(varValueStr, "application/json"));
+                jsonnetVars.put(convert(varName), new StringDocument(varValueStr, "application/json"));
 
             } else {
                 logger.warn("Exchange property {} is not serializable, skipping.", varName);
@@ -104,9 +107,9 @@ public class DatasonnetProcessor implements Processor {
         }
 
         //TODO - is there a better way to handle this?
-        Map<String, Object> camelHeaders = exchange.getMessage().getHeaders();
+        Map<String, Object> camelHeaders = new HashMap<>();
 
-        Iterator<Map.Entry<String, Object>> entryIterator = camelHeaders.entrySet().iterator();
+        Iterator<Map.Entry<String, Object>> entryIterator = exchange.getMessage().getHeaders().entrySet().iterator();
 
         while (entryIterator.hasNext()) {
             Map.Entry<String, Object> entry = entryIterator.next();
@@ -116,26 +119,32 @@ public class DatasonnetProcessor implements Processor {
 
             if (headerValue == null || !(headerValue instanceof Serializable)) {
                 logger.debug("Header " + entry.getKey() + " is null or not Serializable : " + headerClassName + " ; removing");
-                entryIterator.remove();
+                //entryIterator.remove();
+            } else {
+                boolean canSerialize = true;
+                try {
+                    jacksonMapper.writeValueAsString(headerValue);
+                    logger.debug("Header " + entry.getKey() + " is Serializable : " + headerClassName);
+                    camelHeaders.put(convert(entry.getKey()), headerValue);
+                } catch (Exception e) {
+                    logger.debug("Header " + entry.getKey() + " cannot be serialized; removing : " + e.getMessage());
+                    entryIterator.remove();
+                }
             }
         }
 
         String headersJson = jacksonMapper.writeValueAsString(camelHeaders);
         jsonnetVars.put("headers", new StringDocument(headersJson, "application/json"));
 
-        Object body = exchange.getMessage().getBody();
-        String bodyAsString = exchange.getMessage().getBody(java.lang.String.class);
+        Object body = (inputMimeType.contains("java") ? exchange.getMessage().getBody() : exchange.getMessage().getBody(java.lang.String.class));
 
         logger.debug("Input MIME type is " + inputMimeType);
         logger.debug("Output MIME type is: " + outputMimeType);
         logger.debug("(1)Message Body is " + body);
-        logger.debug("(2)Message Body is " + bodyAsString);
         logger.debug("Variables are: " + jsonnetVars);
 
         //TODO we need a better solution going forward but for now we just differentiate between Java and text-based formats
-        Document payload = (inputMimeType.contains("java") ?
-                createDocument(body, inputMimeType) :
-                createDocument(bodyAsString, inputMimeType));
+        Document payload = createDocument(body, inputMimeType);
 
         logger.debug("Document is: " + (payload.canGetContentsAs(String.class) ? payload.getContentsAsString() : payload.getContentsAsObject()));
 
@@ -272,5 +281,30 @@ public class DatasonnetProcessor implements Processor {
         document = isObject ? new JavaObjectDocument(content) : new StringDocument(documentContent, mimeType);
 
         return document;
+    }
+
+    private static String convert(String ident) {
+        if (ident.length() == 0) {
+            return "_";
+        }
+        CharacterIterator ci = new StringCharacterIterator(ident);
+        StringBuilder sb = new StringBuilder();
+        for (char c = ci.first(); c != CharacterIterator.DONE; c = ci.next()) {
+            if (c == ' ')
+                c = '_';
+            if (sb.length() == 0) {
+                if (Character.isJavaIdentifierStart(c)) {
+                    sb.append(c);
+                    continue;
+                } else
+                    sb.append('_');
+            }
+            if (Character.isJavaIdentifierPart(c)) {
+                sb.append(c);
+            } else {
+                sb.append('_');
+            }
+        };
+        return sb.toString();
     }
 }
