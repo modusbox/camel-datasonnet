@@ -140,7 +140,7 @@ public class DatasonnetProcessor implements Processor {
 
         logger.debug("Input MIME type is " + inputMimeType);
         logger.debug("Output MIME type is: " + outputMimeType);
-        logger.debug("(1)Message Body is " + body);
+        logger.debug("Message Body is " + body);
         logger.debug("Variables are: " + jsonnetVars);
 
         //TODO we need a better solution going forward but for now we just differentiate between Java and text-based formats
