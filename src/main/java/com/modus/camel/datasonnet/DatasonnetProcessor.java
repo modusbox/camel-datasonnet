@@ -100,6 +100,10 @@ public class DatasonnetProcessor implements Processor {
             }
         }
 
+        //TODO - is there a better way to handle this?
+        String headersJson = jacksonMapper.writeValueAsString(exchange.getMessage().getHeaders());
+        jsonnetVars.put("headers", new StringDocument(headersJson, "application/json"));
+
         //TODO we need a better solution going forward but for now we just differentiate between Java and text-based formats
         Document payload = inputMimeType.contains("java") ?
                 createDocument(exchange.getMessage().getBody(), inputMimeType) :
