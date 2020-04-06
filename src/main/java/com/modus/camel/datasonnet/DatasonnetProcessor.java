@@ -50,108 +50,7 @@ public class DatasonnetProcessor implements Processor {
     private String datasonnetScript;
 
     public void process(Exchange exchange) throws Exception {
-        if (inputMimeType == null || "".equalsIgnoreCase(inputMimeType.trim())) {
-            //Try to auto-detect input mime type if it was not explicitly set
-            String overriddenInputMimeType = (String) exchange.getIn().getHeader(Exchange.CONTENT_TYPE, (String) exchange.getIn().getHeader("mimeType", "UNKNOWN_MIME_TYPE"));
-            if (!"UNKNOWN_MIME_TYPE".equalsIgnoreCase(overriddenInputMimeType) && overriddenInputMimeType != null) {
-                inputMimeType = overriddenInputMimeType;
-            }
-        }
-        if (!supportedMimeTypes.contains(inputMimeType)) {
-            logger.warn("Input Mime Type " + inputMimeType + " is not supported or suitable plugin not found, using application/json");
-            inputMimeType = "application/json";
-        }
-        //logger.debug("Input mime type is: " + inputMimeType);
-
-        if (!supportedMimeTypes.contains(outputMimeType)) {
-            logger.warn("Output Mime Type " + outputMimeType + " is not supported or suitable plugin not found, using application/json");
-            outputMimeType = "application/json";
-        }
-        //logger.debug("Output mime type is: " + outputMimeType);
-
-        String mapping = "{}";
-
-        if (getDatasonnetFile() != null) {
-            //TODO - support URLs like 'file://' and/or 'classpath:'
-            InputStream mappingStream = getClass().getClassLoader().getResourceAsStream(getDatasonnetFile());
-            mapping = IOUtils.toString(mappingStream);
-        } else if (getDatasonnetScript() != null) {
-            mapping = getDatasonnetScript();
-        } else {
-            throw new IllegalArgumentException("Either datasonnetFile or datasonnetScript property must be set!");
-        }
-
-        ObjectMapper jacksonMapper = new ObjectMapper();
-        jacksonMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-
-        Map<String, Document> jsonnetVars = new HashMap<>();
-
-        for (String varName : exchange.getProperties().keySet()) {
-            Object varValue = exchange.getProperty(varName);
-
-            if (varValue instanceof Serializable) {
-                String varValueStr = varValue.toString();
-                try {
-                    JsonNode jsonNode = jacksonMapper.readTree(varValueStr);
-                    //This is valid JSON
-                } catch (Exception e) {
-                    //Not a valid JSON, convert
-                    varValueStr = jacksonMapper.writeValueAsString(varValueStr);
-                }
-                //TODO - how do we support Java, XML and CSV properties?
-                jsonnetVars.put(convert(varName), new StringDocument(varValueStr, "application/json"));
-
-            } else {
-                logger.warn("Exchange property {} is not serializable, skipping.", varName);
-            }
-        }
-
-        //TODO - is there a better way to handle this?
-        Map<String, Object> camelHeaders = new HashMap<>();
-
-        Iterator<Map.Entry<String, Object>> entryIterator = exchange.getMessage().getHeaders().entrySet().iterator();
-
-        while (entryIterator.hasNext()) {
-            Map.Entry<String, Object> entry = entryIterator.next();
-
-            Object headerValue = entry.getValue();
-            String headerClassName = (headerValue != null ? headerValue.getClass().getName() : " NULL ");
-
-            if (headerValue == null || !(headerValue instanceof Serializable)) {
-                logger.debug("Header " + entry.getKey() + " is null or not Serializable : " + headerClassName + " ; removing");
-                //entryIterator.remove();
-            } else {
-                boolean canSerialize = true;
-                try {
-                    jacksonMapper.writeValueAsString(headerValue);
-                    logger.debug("Header " + entry.getKey() + " is Serializable : " + headerClassName);
-                    camelHeaders.put(convert(entry.getKey()), headerValue);
-                } catch (Exception e) {
-                    logger.debug("Header " + entry.getKey() + " cannot be serialized; removing : " + e.getMessage());
-                    entryIterator.remove();
-                }
-            }
-        }
-
-        String headersJson = jacksonMapper.writeValueAsString(camelHeaders);
-        jsonnetVars.put("headers", new StringDocument(headersJson, "application/json"));
-
-        Object body = (inputMimeType.contains("java") ? exchange.getMessage().getBody() : exchange.getMessage().getBody(java.lang.String.class));
-
-        logger.debug("Input MIME type is " + inputMimeType);
-        logger.debug("Output MIME type is: " + outputMimeType);
-        logger.debug("Message Body is " + body);
-        logger.debug("Variables are: " + jsonnetVars);
-
-        //TODO we need a better solution going forward but for now we just differentiate between Java and text-based formats
-        Document payload = createDocument(body, inputMimeType);
-
-        logger.debug("Document is: " + (payload.canGetContentsAs(String.class) ? payload.getContentsAsString() : payload.getContentsAsObject()));
-
-        Mapper mapper = new Mapper(mapping, jsonnetVars.keySet(), namedImports, true, true);
-        Document mappedDoc = mapper.transform(payload, jsonnetVars, getOutputMimeType());
-        Object mappedBody = mappedDoc.canGetContentsAs(String.class) ? mappedDoc.getContentsAsString() : mappedDoc.getContentsAsObject();
-
+        Object mappedBody = processMapping(exchange);
         exchange.getIn().setBody(mappedBody);
     }
 
@@ -243,6 +142,119 @@ public class DatasonnetProcessor implements Processor {
 
     public void setDatasonnetScript(String datasonnetScript) {
         this.datasonnetScript = datasonnetScript;
+    }
+
+    public Object processMapping(Exchange exchange) throws Exception {
+        if (inputMimeType == null || "".equalsIgnoreCase(inputMimeType.trim())) {
+            //Try to auto-detect input mime type if it was not explicitly set
+            String overriddenInputMimeType = (String) exchange.getIn().getHeader(Exchange.CONTENT_TYPE, (String) exchange.getIn().getHeader("mimeType", "UNKNOWN_MIME_TYPE"));
+            if (!"UNKNOWN_MIME_TYPE".equalsIgnoreCase(overriddenInputMimeType) && overriddenInputMimeType != null) {
+                inputMimeType = overriddenInputMimeType;
+            }
+        }
+        if (!supportedMimeTypes.contains(inputMimeType)) {
+            logger.warn("Input Mime Type " + inputMimeType + " is not supported or suitable plugin not found, using application/json");
+            inputMimeType = "application/json";
+        }
+        //logger.debug("Input mime type is: " + inputMimeType);
+
+        if (outputMimeType == null || "".equalsIgnoreCase(outputMimeType.trim())) {
+            //Try to auto-detect input mime type if it was not explicitly set
+            String overriddenOutputMimeType = (String) exchange.getIn().getHeader("OutputMimeType", "UNKNOWN_MIME_TYPE");
+            if (!"UNKNOWN_MIME_TYPE".equalsIgnoreCase(overriddenOutputMimeType) && overriddenOutputMimeType != null) {
+                outputMimeType = overriddenOutputMimeType;
+            }
+        }
+        if (!supportedMimeTypes.contains(outputMimeType)) {
+            logger.warn("Output Mime Type " + outputMimeType + " is not supported or suitable plugin not found, using application/json");
+            outputMimeType = "application/json";
+        }
+        //logger.debug("Output mime type is: " + outputMimeType);
+
+        String mapping = "{}";
+
+        if (getDatasonnetFile() != null) {
+            //TODO - support URLs like 'file://' and/or 'classpath:'
+            InputStream mappingStream = getClass().getClassLoader().getResourceAsStream(getDatasonnetFile());
+            mapping = IOUtils.toString(mappingStream);
+        } else if (getDatasonnetScript() != null) {
+            mapping = getDatasonnetScript();
+        } else {
+            throw new IllegalArgumentException("Either datasonnetFile or datasonnetScript property must be set!");
+        }
+
+        ObjectMapper jacksonMapper = new ObjectMapper();
+        jacksonMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+
+        Map<String, Document> jsonnetVars = new HashMap<>();
+
+        for (String varName : exchange.getProperties().keySet()) {
+            Object varValue = exchange.getProperty(varName);
+
+            if (varValue instanceof Serializable) {
+                String varValueStr = varValue.toString();
+                try {
+                    JsonNode jsonNode = jacksonMapper.readTree(varValueStr);
+                    //This is valid JSON
+                } catch (Exception e) {
+                    //Not a valid JSON, convert
+                    varValueStr = jacksonMapper.writeValueAsString(varValueStr);
+                }
+                //TODO - how do we support Java, XML and CSV properties?
+                jsonnetVars.put(convert(varName), new StringDocument(varValueStr, "application/json"));
+
+            } else {
+                logger.warn("Exchange property {} is not serializable, skipping.", varName);
+            }
+        }
+
+        //TODO - is there a better way to handle this?
+        Map<String, Object> camelHeaders = new HashMap<>();
+
+        Iterator<Map.Entry<String, Object>> entryIterator = exchange.getMessage().getHeaders().entrySet().iterator();
+
+        while (entryIterator.hasNext()) {
+            Map.Entry<String, Object> entry = entryIterator.next();
+
+            Object headerValue = entry.getValue();
+            String headerClassName = (headerValue != null ? headerValue.getClass().getName() : " NULL ");
+
+            if (headerValue == null || !(headerValue instanceof Serializable)) {
+                logger.debug("Header " + entry.getKey() + " is null or not Serializable : " + headerClassName + " ; removing");
+                //entryIterator.remove();
+            } else {
+                boolean canSerialize = true;
+                try {
+                    jacksonMapper.writeValueAsString(headerValue);
+                    logger.debug("Header " + entry.getKey() + " is Serializable : " + headerClassName);
+                    camelHeaders.put(convert(entry.getKey()), headerValue);
+                } catch (Exception e) {
+                    logger.debug("Header " + entry.getKey() + " cannot be serialized; removing : " + e.getMessage());
+                    entryIterator.remove();
+                }
+            }
+        }
+
+        String headersJson = jacksonMapper.writeValueAsString(camelHeaders);
+        jsonnetVars.put("headers", new StringDocument(headersJson, "application/json"));
+
+        Object body = (inputMimeType.contains("java") ? exchange.getMessage().getBody() : exchange.getMessage().getBody(java.lang.String.class));
+
+        logger.debug("Input MIME type is " + inputMimeType);
+        logger.debug("Output MIME type is: " + outputMimeType);
+        logger.debug("Message Body is " + body);
+        logger.debug("Variables are: " + jsonnetVars);
+
+        //TODO we need a better solution going forward but for now we just differentiate between Java and text-based formats
+        Document payload = createDocument(body, inputMimeType);
+
+        logger.debug("Document is: " + (payload.canGetContentsAs(String.class) ? payload.getContentsAsString() : payload.getContentsAsObject()));
+
+        Mapper mapper = new Mapper(mapping, jsonnetVars.keySet(), namedImports, true, true);
+        Document mappedDoc = mapper.transform(payload, jsonnetVars, getOutputMimeType());
+        Object mappedBody = mappedDoc.canGetContentsAs(String.class) ? mappedDoc.getContentsAsString() : mappedDoc.getContentsAsObject();
+
+        return mappedBody;
     }
 
     private Document createDocument(Object content, String type) throws JsonProcessingException {

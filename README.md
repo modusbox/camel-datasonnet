@@ -16,7 +16,7 @@ To use the DataSonnet module in your application, add the following dependency t
     <version>1.0-SNAPSHOT</version>
 </dependency>
 ```
-#Usage
+# Usage
 
 To transform a payload using DataSonnet, use the following processor example:
 
@@ -88,3 +88,33 @@ local lib4 = import 'morelibs/lib4.libsonnet';
 
 This behavior can be overridden by setting the `librariesPath` property of the processor bean. The value of this attribute is a set of absolute or relative paths separated by the `:` (colon) character.
 
+# Expression Language Support
+
+Datasonnet can be used as an inline expression language. For example:
+
+```
+<route id="expressionLanguage">
+    <from uri="direct:expressionLanguage"/>
+
+    <setHeader name="OutputMimeType">
+        <constant>text/plain</constant>
+    </setHeader>
+    <setHeader name="HelloHeader">
+        <language language="datasonnet">"Hello, " + payload</language>
+    </setHeader>
+
+    <setHeader name="OutputMimeType">
+        <constant>application/json</constant>
+    </setHeader>
+    <setBody>
+        <language language="datasonnet">
+            {
+                test: headers.HelloHeader
+            }
+        </language>
+    </setBody>
+    <to uri="mock:direct:end"/>
+</route>
+```
+
+Since there are no additional attributes or parameters allowed for the `<language>` element, the input and output MIME types can be controlled by using headers `Content-Type` and `OutputMimeType` prior to calling an expression.

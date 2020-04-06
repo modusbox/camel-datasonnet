@@ -1,0 +1,23 @@
+{
+  "language": {
+    "kind": "language",
+    "name": "datasonnet",
+    "modelName": "datasonnet",
+    "title": "Datasonnet",
+    "description": "To use Datasonnet scripts in Camel expressions or predicates.",
+    "deprecated": false,
+    "deprecationNote": "language,script",
+    "firstVersion": "1.0.0",
+    "label": "language,script",
+    "javaType": "com.modus.camel.datasonnet.language.DatasonnetLanguage",
+    "modelJavaType": "com.modus.camel.datasonnet.language.model.DatasonnetExpression",
+    "groupId": "1.0.2-SNAPSHOT",
+    "artifactId": "camel-datasonnet",
+    "version": "1.0.2-SNAPSHOT"
+  },
+  "properties": {
+    "expression": { "kind": "value", "displayName": "Expression", "required": true, "type": "string", "javaType": "java.lang.String", "deprecated": false, "secret": false, "description": "The expression value in your chosen language syntax" },
+    "id": { "kind": "attribute", "displayName": "Id", "required": false, "type": "string", "javaType": "java.lang.String", "deprecated": false, "secret": false, "description": "Sets the id of this node" },
+    "outputMimeType": { "kind": "attribute", "displayName": "outputMimeType", "required": false, "type": "string", "javaType": "java.lang.String", "deprecated": false, "secret": false, "description": "Sets the output mime type of the expression" }
+  }
+}

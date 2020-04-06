@@ -117,6 +117,29 @@
             <to uri="mock:direct:end"/>
         </route>
 
+        <route id="expressionLanguage">
+            <from uri="direct:expressionLanguage"/>
+
+            <setHeader name="OutputMimeType">
+                <constant>text/plain</constant>
+            </setHeader>
+            <setHeader name="HelloHeader">
+                <language language="datasonnet">"Hello, " + payload</language>
+            </setHeader>
+
+            <setHeader name="OutputMimeType">
+                <constant>application/json</constant>
+            </setHeader>
+            <setBody>
+                <language language="datasonnet">
+                    {
+                        test: headers.HelloHeader
+                    }
+                </language>
+            </setBody>
+            <to uri="mock:direct:end"/>
+        </route>
+
     </camelContext>
 
 </beans>

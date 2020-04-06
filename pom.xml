@@ -6,7 +6,7 @@
 
     <groupId>com.modus.camel.datasonnet</groupId>
     <artifactId>camel-datasonnet</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -41,7 +41,28 @@
                     </additionalClasspathElements>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-package-maven-plugin</artifactId>
+                <version>${camel.version}</version>
+                <executions>
+                    <execution>
+                        <id>generate</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>generate-languages-list</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <failFast>false</failFast>
+                </configuration>
+            </plugin>
+
+
         </plugins>
+
     </build>
 
     <dependencies>

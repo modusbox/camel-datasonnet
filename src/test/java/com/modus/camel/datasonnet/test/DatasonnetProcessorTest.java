@@ -71,6 +71,13 @@ public class DatasonnetProcessorTest {
     }
 
     @Test
+    public void testExpressionLanguage() throws Exception {
+        runCamelTest("World",
+                "{ \"test\":\"Hello, World\"}",
+                "direct:expressionLanguage");
+    }
+
+    @Test
     public void testReadJava() throws Exception {
         Gizmo theGizmo = new Gizmo();
         theGizmo.setName("gizmo");
@@ -120,6 +127,9 @@ public class DatasonnetProcessorTest {
         template.sendBody(uri, payload);
         Exchange exchange = mock.assertExchangeReceived(mock.getReceivedCounter() - 1);
         String response = exchange.getIn().getBody().toString();
+
+        System.out.println("RESPONSE IS " + response);
+
         JSONAssert.assertEquals(expectedJson, response, true);
     }
 
