@@ -15,4 +15,9 @@ public class DatasonnetLanguage extends LanguageSupport {
     public DatasonnetExpression createExpression(String expression) {
         return new DatasonnetExpression(expression);
     }
+
+    public static DatasonnetExpression datasonnet(String expression) {
+        return new DatasonnetLanguage().createExpression(expression);
+    }
+
 }

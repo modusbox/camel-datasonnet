@@ -1,4 +1,4 @@
-# Camel DataSonnet Processor
+# Camel DataSonnet Module
 
 The DataSonnet module adds [DataSonnet mapping language](http://datasonnet.com) support to Camel 3.x
 
@@ -12,8 +12,8 @@ To use the DataSonnet module in your application, add the following dependency t
 ```
 <dependency>
     <groupId>com.modus.camel.datasonnet</groupId>
-    <artifactId>camel-datasonnet-processor</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>camel-datasonnet</artifactId>
+    <version>1.0.2-SNAPSHOT</version>
 </dependency>
 ```
 # Usage
