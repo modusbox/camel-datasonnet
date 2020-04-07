@@ -1,11 +1,17 @@
 package com.modus.camel.datasonnet.test;
 
+import com.modus.camel.datasonnet.language.model.DatasonnetExpression;
 import com.modus.camel.datasonnet.test.javatest.Gizmo;
 import com.modus.camel.datasonnet.test.javatest.Manufacturer;
+import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.builder.ValueBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.impl.DefaultCamelContext;
+import org.apache.camel.model.language.JsonPathExpression;
 import org.apache.camel.test.spring.junit5.CamelSpringBootTest;
 import org.apache.camel.test.spring.junit5.MockEndpoints;
 
@@ -22,13 +28,14 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
+import static com.modus.camel.datasonnet.language.DatasonnetLanguage.datasonnet;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @CamelSpringBootTest
 @SpringBootApplication
 @ContextConfiguration(locations = {"classpath:camel-context.xml"})
 @MockEndpoints("direct:end")
-public class DatasonnetProcessorTest {
+public class CamelDatasonnetTest {
     @Autowired
     private ProducerTemplate template;
 
@@ -76,6 +83,8 @@ public class DatasonnetProcessorTest {
                 "{ \"test\":\"Hello, World\"}",
                 "direct:expressionLanguage");
     }
+
+
 
     @Test
     public void testReadJava() throws Exception {
@@ -127,9 +136,6 @@ public class DatasonnetProcessorTest {
         template.sendBody(uri, payload);
         Exchange exchange = mock.assertExchangeReceived(mock.getReceivedCounter() - 1);
         String response = exchange.getIn().getBody().toString();
-
-        System.out.println("RESPONSE IS " + response);
-
         JSONAssert.assertEquals(expectedJson, response, true);
     }
 
