@@ -118,3 +118,30 @@ Datasonnet can be used as an inline expression language. For example:
 ```
 
 Since there are no additional attributes or parameters allowed for the `<language>` element, the input and output MIME types can be controlled by using headers `Content-Type` and `OutputMimeType` prior to calling an expression.
+
+If you want to use Datasonnet expressions in the Camel Java DSL, override the `RouterBuilder` class and define the `datasonnet()` function as follows:
+
+```
+public ValueBuilder datasonnet(String value) {
+    DatasonnetExpression exp = new DatasonnetExpression(value);
+    return new ValueBuilder(exp);
+}
+```
+
+Then it can be used in your routes, e.g.
+
+```
+@Override
+public void configure() throws Exception {
+    from("direct:expressionsInJava")
+        .choice()
+            .when(datasonnet("payload == 'World'"))
+                .setHeader("OutputMimeType", constant("text/plain"))
+                .setBody(datasonnet("'Hello, ' + payload"))
+            .otherwise()
+                .setHeader("OutputMimeType", constant("text/plain"))
+                .setBody(datasonnet("'Good bye, ' + payload"))
+        .end()
+        .to("mock:direct:response");
+}
+```
