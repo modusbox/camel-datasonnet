@@ -45,19 +45,41 @@ public class ExpressionsInJavaTest {
                     DatasonnetExpression exp = new DatasonnetExpression(value);
                     return new ValueBuilder(exp);
                 }
+                public ValueBuilder datasonnet(String value, String inputMimeType, String outputMimeType) {
+                    DatasonnetExpression exp = new DatasonnetExpression(value);
+                    exp.setInputMimeType(inputMimeType);
+                    exp.setOutputMimeType(outputMimeType);
+                    return new ValueBuilder(exp);
+                }
+
                 @Override
                 public void configure() throws Exception {
                     from("direct:expressionsInJava")
                             .choice()
-                                .when(datasonnet("payload == 'World'"))
-                                    .setHeader("OutputMimeType", constant("text/plain"))
-                                    .setBody(datasonnet("'Hello, ' + payload"))
+                                .when(datasonnet("payload == 'World'", "text/plain", "application/json"))
+                                    .setProperty("outputMimeType", constant("text/plain"))
+                                    .setBody(datasonnet("'Hello, ' + payload", "text/plain", "text/plain"))
                                 .otherwise()
-                                    .setHeader("OutputMimeType", constant("text/plain"))
-                                    .setBody(datasonnet("'Good bye, ' + payload"))
+                                    .setProperty("outputMimeType", constant("text/plain"))
+                                    .setBody(datasonnet("'Good bye, ' + payload", "text/plain", "text/plain"))
                             .end()
                             .to("mock:direct:response");
                 }
+
+//                @Override
+//                public void configure() throws Exception {
+//                    from("direct:expressionsInJava")
+//                            //.setHeader("ConditionExpression", simple("payload == 'World'"))
+//                            .setHeader("ConditionExpression", simple("true"))
+//                            .choice()
+//                            .when(datasonnet("DS.Lang.datasonnet(header.ConditionExpression)", "text/plain", "application/json"))
+//                            .setBody(datasonnet("'Hello, ' + payload", "text/plain", "text/plain"))
+//                            .otherwise()
+//                            .setBody(datasonnet("'Good bye, ' + payload", "text/plain", "text/plain"))
+//                            .end()
+//                            .to("mock:direct:response");
+//                }
+
             };
         }
     }
@@ -65,9 +87,7 @@ public class ExpressionsInJavaTest {
     @Test
     public void testExpressionLanguageInJava() throws Exception {
         endEndpoint.expectedMessageCount(1);
-        testProducer.sendBodyAndHeaders("World", new HashMap<String, Object>() {{
-            put("Content-Type", "text/plain");
-        }});
+        testProducer.sendBody("World");
         Exchange exchange = endEndpoint.assertExchangeReceived(0);
         String response = exchange.getIn().getBody().toString();
         assertEquals("Hello, World", response);

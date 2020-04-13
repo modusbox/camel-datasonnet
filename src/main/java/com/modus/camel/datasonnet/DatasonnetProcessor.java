@@ -147,7 +147,10 @@ public class DatasonnetProcessor implements Processor {
     public Object processMapping(Exchange exchange) throws Exception {
         if (inputMimeType == null || "".equalsIgnoreCase(inputMimeType.trim())) {
             //Try to auto-detect input mime type if it was not explicitly set
-            String overriddenInputMimeType = (String) exchange.getIn().getHeader(Exchange.CONTENT_TYPE, (String) exchange.getIn().getHeader("mimeType", "UNKNOWN_MIME_TYPE"));
+            String overriddenInputMimeType = (String) exchange.getIn().getHeader(Exchange.CONTENT_TYPE,
+                                                                                 (String) exchange.getProperty("inputMimeType",
+                                                                                 (String) exchange.getIn().getHeader("inputMimeType",
+                                                                                         "UNKNOWN_MIME_TYPE")));
             if (!"UNKNOWN_MIME_TYPE".equalsIgnoreCase(overriddenInputMimeType) && overriddenInputMimeType != null) {
                 inputMimeType = overriddenInputMimeType;
             }
@@ -160,7 +163,7 @@ public class DatasonnetProcessor implements Processor {
 
         if (outputMimeType == null || "".equalsIgnoreCase(outputMimeType.trim())) {
             //Try to auto-detect input mime type if it was not explicitly set
-            String overriddenOutputMimeType = (String) exchange.getIn().getHeader("OutputMimeType", "UNKNOWN_MIME_TYPE");
+            String overriddenOutputMimeType = (String) exchange.getProperty("outputMimeType", (String) exchange.getIn().getHeader("outputMimeType", "UNKNOWN_MIME_TYPE"));
             if (!"UNKNOWN_MIME_TYPE".equalsIgnoreCase(overriddenOutputMimeType) && overriddenOutputMimeType != null) {
                 outputMimeType = overriddenOutputMimeType;
             }
@@ -236,7 +239,9 @@ public class DatasonnetProcessor implements Processor {
         }
 
         String headersJson = jacksonMapper.writeValueAsString(camelHeaders);
-        jsonnetVars.put("headers", new StringDocument(headersJson, "application/json"));
+        Document headersDocument = new StringDocument(headersJson, "application/json");
+        jsonnetVars.put("headers", headersDocument);
+        jsonnetVars.put("header", headersDocument);
 
         Object body = (inputMimeType.contains("java") ? exchange.getMessage().getBody() : exchange.getMessage().getBody(java.lang.String.class));
 
@@ -247,6 +252,7 @@ public class DatasonnetProcessor implements Processor {
 
         //TODO we need a better solution going forward but for now we just differentiate between Java and text-based formats
         Document payload = createDocument(body, inputMimeType);
+        jsonnetVars.put("body", payload);
 
         logger.debug("Document is: " + (payload.canGetContentsAs(String.class) ? payload.getContentsAsString() : payload.getContentsAsObject()));
 
