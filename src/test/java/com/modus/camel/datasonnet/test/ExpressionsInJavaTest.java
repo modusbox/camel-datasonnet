@@ -14,6 +14,7 @@ import org.apache.camel.test.spring.CamelSpringRunner;
 import org.apache.camel.test.spring.MockEndpoints;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
@@ -55,31 +56,10 @@ public class ExpressionsInJavaTest {
                 @Override
                 public void configure() throws Exception {
                     from("direct:expressionsInJava")
-                            .choice()
-                                .when(datasonnet("payload == 'World'", "text/plain", "application/json"))
-                                    .setProperty("outputMimeType", constant("text/plain"))
-                                    .setBody(datasonnet("'Hello, ' + payload", "text/plain", "text/plain"))
-                                .otherwise()
-                                    .setProperty("outputMimeType", constant("text/plain"))
-                                    .setBody(datasonnet("'Good bye, ' + payload", "text/plain", "text/plain"))
-                            .end()
+                            //TODO how do I chain two datasonnet expressions here?
+                            //.setBody(datasonnet(datasonnet("header.DataSonnetScript")))
                             .to("mock:direct:response");
                 }
-
-//                @Override
-//                public void configure() throws Exception {
-//                    from("direct:expressionsInJava")
-//                            //.setHeader("ConditionExpression", simple("payload == 'World'"))
-//                            .setHeader("ConditionExpression", simple("true"))
-//                            .choice()
-//                            .when(datasonnet("DS.Lang.datasonnet(header.ConditionExpression)", "text/plain", "application/json"))
-//                            .setBody(datasonnet("'Hello, ' + payload", "text/plain", "text/plain"))
-//                            .otherwise()
-//                            .setBody(datasonnet("'Good bye, ' + payload", "text/plain", "text/plain"))
-//                            .end()
-//                            .to("mock:direct:response");
-//                }
-
             };
         }
     }
@@ -87,9 +67,11 @@ public class ExpressionsInJavaTest {
     @Test
     public void testExpressionLanguageInJava() throws Exception {
         endEndpoint.expectedMessageCount(1);
-        testProducer.sendBody("World");
+        testProducer.sendBodyAndHeader("{ \"name\" : \"World\"",
+                                        "DataSonnetScript",
+                                        "{ greeting: \"Hello, \" + payload.name }");
         Exchange exchange = endEndpoint.assertExchangeReceived(0);
         String response = exchange.getIn().getBody().toString();
-        assertEquals("Hello, World", response);
+        JSONAssert.assertEquals("{\"greeting\":\"Hello, World\"}", response, true);
     }
 }
