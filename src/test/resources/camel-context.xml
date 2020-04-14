@@ -120,14 +120,14 @@
         <route id="expressionLanguage">
             <from uri="direct:expressionLanguage"/>
 
-            <setHeader name="OutputMimeType">
+            <setHeader name="outputMimeType">
                 <constant>text/plain</constant>
             </setHeader>
             <setHeader name="HelloHeader">
                 <language language="datasonnet">"Hello, " + payload</language>
             </setHeader>
 
-            <setHeader name="OutputMimeType">
+            <setHeader name="outputMimeType">
                 <constant>application/json</constant>
             </setHeader>
             <setBody>

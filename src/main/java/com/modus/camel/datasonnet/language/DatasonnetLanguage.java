@@ -13,11 +13,7 @@ public class DatasonnetLanguage extends LanguageSupport {
 
     @Override
     public DatasonnetExpression createExpression(String expression) {
-        return new DatasonnetExpression(expression);
+        DatasonnetExpression datasonnetExpression = new DatasonnetExpression(expression);
+        return datasonnetExpression;
     }
-
-    public static DatasonnetExpression datasonnet(String expression) {
-        return new DatasonnetLanguage().createExpression(expression);
-    }
-
 }
