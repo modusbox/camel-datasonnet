@@ -4,9 +4,9 @@ import com.modus.camel.datasonnet.DatasonnetProcessor;
 import org.apache.camel.AfterPropertiesConfigured;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
+import org.apache.camel.Expression;
 import org.apache.camel.spi.GeneratedPropertyConfigurer;
 import org.apache.camel.support.ExpressionAdapter;
-import org.apache.camel.support.ExpressionSupport;
 import org.apache.camel.support.component.PropertyConfigurerSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +18,8 @@ public class DatasonnetExpression extends ExpressionAdapter implements AfterProp
     private String outputMimeType;
 
     private DatasonnetProcessor processor;
+
+    private Expression innerExpression;
 
     private static Logger logger = LoggerFactory.getLogger(DatasonnetExpression.class);
 
@@ -36,6 +38,10 @@ public class DatasonnetExpression extends ExpressionAdapter implements AfterProp
     @Override
     public <T> T evaluate(Exchange exchange, Class<T> type) {
         try {
+            if (innerExpression != null) {
+                String script = innerExpression.evaluate(exchange, String.class);
+                processor.setDatasonnetScript(script);
+            }
             processor.setInputMimeType(getInputMimeType());
             processor.setOutputMimeType(getOutputMimeType());
             Object value = processor.processMapping(exchange);
@@ -86,4 +92,11 @@ public class DatasonnetExpression extends ExpressionAdapter implements AfterProp
         this.outputMimeType = outputMimeType;
     }
 
+    public Expression getInnerExpression() {
+        return innerExpression;
+    }
+
+    public void setInnerExpression(Expression innerExpression) {
+        this.innerExpression = innerExpression;
+    }
 }

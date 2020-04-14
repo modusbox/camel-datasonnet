@@ -127,29 +127,36 @@ Datasonnet can be used as an inline expression language. For example:
 
 Since there are no additional attributes or parameters allowed for the `<language>` element, the input and output MIME types can be controlled by setting headers `Content-Type` and `outputMimeType` prior to calling an expression.
 
-If you want to use Datasonnet expressions in the Camel Java DSL, override the `RouterBuilder` class and define the `datasonnet()` function as follows:
+If you want to use Datasonnet expressions in the Camel Java DSL, you can use the `DatasonnetRouterBuilder` class and one of its `datasonnet()` functions, for example:
 
 ```
-public ValueBuilder datasonnet(String value) {
-    DatasonnetExpression exp = new DatasonnetExpression(value);
-    return new ValueBuilder(exp);
+new DatasonnetRouteBuilder() {
+    @Override
+    public void configure() throws Exception {
+        from("direct:expressionsInJava")
+            .choice()
+                .when(datasonnet("payload == 'World'"))
+                    .setBody(datasonnet("'Hello, ' + payload", "text/plain", "text/plain"))
+                .otherwise()
+                    .setBody(datasonnet("{ \"message\":\"Good bye!\"}"))
+            .end()
+            .to("mock:direct:response");
+    }
 }
 ```
 
-Then it can be used in your routes, e.g.
+Chaining of expressions is also allowed, e.g.:
 
 ```
 @Override
 public void configure() throws Exception {
-    from("direct:expressionsInJava")
-        .choice()
-            .when(datasonnet("payload == 'World'"))
-                .setHeader("outputMimeType", constant("text/plain"))
-                .setBody(datasonnet("'Hello, ' + payload"))
-            .otherwise()
-                .setHeader("outputMimeType", constant("text/plain"))
-                .setBody(datasonnet("'Good bye, ' + payload"))
-        .end()
+    from("direct:chainExpressions")
+        .setHeader("ScriptHeader", constant("{ hello: \"World\"}"))
+        .setBody(datasonnet(simple("${header.ScriptHeader}")))
         .to("mock:direct:response");
 }
 ```
+
+See the `DatasonnetRouterBuilder` class for more details.
+
+

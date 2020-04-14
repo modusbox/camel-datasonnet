@@ -1,24 +1,15 @@
 package com.modus.camel.datasonnet.test;
 
-import com.modus.camel.datasonnet.language.model.DatasonnetExpression;
 import com.modus.camel.datasonnet.test.javatest.Gizmo;
 import com.modus.camel.datasonnet.test.javatest.Manufacturer;
-import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.builder.ValueBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.model.language.JsonPathExpression;
 import org.apache.camel.test.spring.junit5.CamelSpringBootTest;
 import org.apache.camel.test.spring.junit5.MockEndpoints;
-
 import org.apache.commons.io.IOUtils;
-
 import org.junit.jupiter.api.Test;
-
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -28,7 +19,6 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
-import static com.modus.camel.datasonnet.language.DatasonnetLanguage.datasonnet;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @CamelSpringBootTest
@@ -83,8 +73,6 @@ public class CamelDatasonnetTest {
                 "{ \"test\":\"Hello, World\"}",
                 "direct:expressionLanguage");
     }
-
-
 
     @Test
     public void testReadJava() throws Exception {

@@ -16,6 +16,8 @@
  */
 package com.modus.camel.datasonnet.language.model;
 
+import org.apache.camel.CamelContext;
+import org.apache.camel.Expression;
 import org.apache.camel.model.language.ExpressionDefinition;
 import org.apache.camel.spi.Metadata;
 
@@ -38,6 +40,8 @@ public class DatasonnetExpression extends ExpressionDefinition {
     @XmlAttribute(name = "outputMimeType")
     private String outputMimeType;
 
+    private Expression innerExpression;
+
     public DatasonnetExpression() {
     }
 
@@ -45,9 +49,32 @@ public class DatasonnetExpression extends ExpressionDefinition {
         super(expression);
     }
 
+    public DatasonnetExpression(Expression expression) {
+        super();
+        this.innerExpression = expression;
+    }
+
+    @Override
+    public Expression createExpression(CamelContext camelContext) {
+        com.modus.camel.datasonnet.language.DatasonnetExpression datasonnetExpression = (com.modus.camel.datasonnet.language.DatasonnetExpression)super.createExpression(camelContext);
+        datasonnetExpression.setOutputMimeType(getOutputMimeType());
+        datasonnetExpression.setInputMimeType(getInputMimeType());
+        datasonnetExpression.setInnerExpression(getInnerExpression());
+        return datasonnetExpression;
+    }
+
     @Override
     public String getLanguage() {
         return "datasonnet";
+    }
+
+    @Override
+    public String getExpression() {
+        String exp = super.getExpression();
+        if (exp == null && this.innerExpression != null) {
+            exp = innerExpression.toString();
+        }
+        return exp;
     }
 
     public String getInputMimeType() {
@@ -64,5 +91,13 @@ public class DatasonnetExpression extends ExpressionDefinition {
 
     public void setOutputMimeType(String outputMimeType) {
         this.outputMimeType = outputMimeType;
+    }
+
+    public Expression getInnerExpression() {
+        return innerExpression;
+    }
+
+    public void setInnerExpression(Expression innerExpression) {
+        this.innerExpression = innerExpression;
     }
 }
