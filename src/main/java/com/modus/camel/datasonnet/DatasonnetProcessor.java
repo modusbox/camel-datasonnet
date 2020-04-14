@@ -226,7 +226,6 @@ public class DatasonnetProcessor implements Processor {
                 logger.debug("Header " + entry.getKey() + " is null or not Serializable : " + headerClassName + " ; removing");
                 //entryIterator.remove();
             } else {
-                boolean canSerialize = true;
                 try {
                     jacksonMapper.writeValueAsString(headerValue);
                     logger.debug("Header " + entry.getKey() + " is Serializable : " + headerClassName);
