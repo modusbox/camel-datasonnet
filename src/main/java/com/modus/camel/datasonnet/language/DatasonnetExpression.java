@@ -23,7 +23,7 @@ public class DatasonnetExpression extends ExpressionAdapter implements AfterProp
 
     private static Logger logger = LoggerFactory.getLogger(DatasonnetExpression.class);
 
-    public DatasonnetExpression(String expression) {
+    public DatasonnetExpression(String expression) throws Exception {
         this.expression = expression;
         processor = new DatasonnetProcessor();
         processor.setDatasonnetScript(expression);
@@ -54,7 +54,11 @@ public class DatasonnetExpression extends ExpressionAdapter implements AfterProp
 
     @Override
     public void afterPropertiesConfigured(CamelContext camelContext) {
-        processor.init();
+        try {
+            processor.init();
+        } catch (Exception e) {
+            logger.error("Unable to initiate DataSonnet processor: ", e);
+        }
     }
 
     @Override

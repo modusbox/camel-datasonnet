@@ -49,13 +49,23 @@ public class DatasonnetProcessor implements Processor {
     private String datasonnetFile;
     private String datasonnetScript;
 
+    ObjectMapper jacksonMapper = new ObjectMapper();
+
     public void process(Exchange exchange) throws Exception {
         Object mappedBody = processMapping(exchange);
         exchange.getIn().setBody(mappedBody);
     }
 
-    public void init() {
+    public void init() throws Exception {
         logger.debug("Initializing mapping bean...");
+
+        jacksonMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+
+        if (getDatasonnetFile() != null) {
+            //TODO - support URLs like 'file://' and/or 'classpath:'
+            InputStream mappingStream = getClass().getClassLoader().getResourceAsStream(getDatasonnetFile());
+            setDatasonnetScript(IOUtils.toString(mappingStream));
+        }
 
         DataFormatService dataFormatService = new DataFormatService();
         List<DataFormatPlugin> pluginsList = dataFormatService.findPlugins();
@@ -173,22 +183,10 @@ public class DatasonnetProcessor implements Processor {
             logger.warn("Output Mime Type " + outputMimeType + " is not supported or suitable plugin not found, using application/json");
             outputMimeType = "application/json";
         }
-        //logger.debug("Output mime type is: " + outputMimeType);
 
-        String mapping = "{}";
-
-        if (getDatasonnetFile() != null) {
-            //TODO - support URLs like 'file://' and/or 'classpath:'
-            InputStream mappingStream = getClass().getClassLoader().getResourceAsStream(getDatasonnetFile());
-            mapping = IOUtils.toString(mappingStream);
-        } else if (getDatasonnetScript() != null) {
-            mapping = getDatasonnetScript();
-        } else {
+        if (getDatasonnetScript() == null) {
             throw new IllegalArgumentException("Either datasonnetFile or datasonnetScript property must be set!");
         }
-
-        ObjectMapper jacksonMapper = new ObjectMapper();
-        jacksonMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
         Map<String, Document> jsonnetVars = new HashMap<>();
 
@@ -256,7 +254,7 @@ public class DatasonnetProcessor implements Processor {
 
         logger.debug("Document is: " + (payload.canGetContentsAs(String.class) ? payload.getContentsAsString() : payload.getContentsAsObject()));
 
-        Mapper mapper = new Mapper(mapping, jsonnetVars.keySet(), namedImports, true, true);
+        Mapper mapper = new Mapper(getDatasonnetScript(), jsonnetVars.keySet(), namedImports, true, true);
         Document mappedDoc = mapper.transform(payload, jsonnetVars, getOutputMimeType());
         Object mappedBody = mappedDoc.canGetContentsAs(String.class) ? mappedDoc.getContentsAsString() : mappedDoc.getContentsAsObject();
 
