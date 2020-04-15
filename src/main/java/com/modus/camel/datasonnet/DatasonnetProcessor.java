@@ -198,13 +198,13 @@ public class DatasonnetProcessor implements Processor {
                 try {
                     JsonNode jsonNode = jacksonMapper.readTree(varValueStr);
                     //This is valid JSON
+                    jsonnetVars.put(convert(varName), new StringDocument(varValueStr, "application/json"));
                 } catch (Exception e) {
                     //Not a valid JSON, convert
-                    varValueStr = jacksonMapper.writeValueAsString(varValueStr);
+//                    varValueStr = jacksonMapper.writeValueAsString(varValueStr);
+                    //TODO - how do we support Java, XML and CSV properties?
+                    jsonnetVars.put(convert(varName), new StringDocument(varValueStr, "text/plain"));
                 }
-                //TODO - how do we support Java, XML and CSV properties?
-                jsonnetVars.put(convert(varName), new StringDocument(varValueStr, "application/json"));
-
             } else {
                 logger.warn("Exchange property {} is not serializable, skipping.", varName);
             }
@@ -299,7 +299,7 @@ public class DatasonnetProcessor implements Processor {
         return document;
     }
 
-    private static String convert(String ident) {
+    private String convert(String ident) {
         if (ident.length() == 0) {
             return "_";
         }
