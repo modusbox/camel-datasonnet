@@ -60,12 +60,12 @@ The `Datasonnet` bean has the following properties:
 | `librariesPath` | no | list of directories separated by system path separator where the processor will search for named imports (i.e. all files with extension `.libsonnet`. If not set, the processor will search in the classpath (including JARs).  |
 
 # Controlling Input and Output MIME Types
-By default, Datasonnet consumes and produces data of the `application/json` type. However, if other data types are expected, this behavior can be changed by setting properties or headers explicitly. The following are supported:
+By default, Datasonnet consumes and produces data of the `application/json` type. However, if other data types are expected, this behavior can be changed by setting properties explicitly. The following are supported:
 
 |||
 | --------------- | --------------------
-| Input MIME type | header.Content-Type, header.inputMimeType, property.inputMimeType |
-| Output MIME type | header.outputMimeType, property.outputMimeType |
+| Input MIME type | property.inputMimeType, header.Content-Type |
+| Output MIME type | property.outputMimeType |
 
 # Named Imports Support
 By default, named imports are resolved by scanning the application classpath and resolving the paths relative
@@ -104,16 +104,19 @@ Datasonnet can be used as an inline expression language. For example:
 <route id="expressionLanguage">
     <from uri="direct:expressionLanguage"/>
 
-    <setHeader name="outputMimeType">
+    <setProperty name="outputMimeType">
         <constant>text/plain</constant>
-    </setHeader>
+    </setProperty>
+    <setProperty name="inputMimeType">
+        <constant>text/plain</constant>
+    </setProperty>
     <setHeader name="HelloHeader">
         <language language="datasonnet">"Hello, " + payload</language>
     </setHeader>
 
-    <setHeader name="outputMimeType">
+    <setProperty name="outputMimeType">
         <constant>application/json</constant>
-    </setHeader>
+    </setProperty>
     <setBody>
         <language language="datasonnet">
             {
@@ -125,7 +128,7 @@ Datasonnet can be used as an inline expression language. For example:
 </route>
 ```
 
-Since there are no additional attributes or parameters allowed for the `<language>` element, the input and output MIME types can be controlled by setting headers `Content-Type` and `outputMimeType` prior to calling an expression.
+Since there are no additional attributes or parameters allowed for the `<language>` element, the input and output MIME types can be controlled by setting properties `inputMimeType` and `outputMimeType` prior to calling an expression.
 
 If you want to use Datasonnet expressions in the Camel Java DSL, you can use the `DatasonnetRouterBuilder` class and one of its `datasonnet()` functions, for example:
 

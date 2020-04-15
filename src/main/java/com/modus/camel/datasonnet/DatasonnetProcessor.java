@@ -39,7 +39,7 @@ public class DatasonnetProcessor implements Processor {
     private List<String> librariesPath;
 
     private Map<String, String> namedImports = new HashMap<>();
-    private List<String> supportedMimeTypes = new ArrayList<>(Arrays.asList(new String[] { "application/json" }));
+    private List<String> supportedMimeTypes = new ArrayList<>(Arrays.asList(new String[]{"application/json"}));
 
     private static Logger logger = LoggerFactory.getLogger(DatasonnetProcessor.class);
 
@@ -147,10 +147,9 @@ public class DatasonnetProcessor implements Processor {
     public Object processMapping(Exchange exchange) throws Exception {
         if (inputMimeType == null || "".equalsIgnoreCase(inputMimeType.trim())) {
             //Try to auto-detect input mime type if it was not explicitly set
-            String overriddenInputMimeType = (String) exchange.getIn().getHeader(Exchange.CONTENT_TYPE,
-                                                                                 (String) exchange.getProperty("inputMimeType",
-                                                                                 (String) exchange.getIn().getHeader("inputMimeType",
-                                                                                         "UNKNOWN_MIME_TYPE")));
+            String overriddenInputMimeType = (String) exchange.getProperty("inputMimeType",
+                                                                            (String) exchange.getIn().getHeader(Exchange.CONTENT_TYPE,
+                                                                "UNKNOWN_MIME_TYPE"));
             if (!"UNKNOWN_MIME_TYPE".equalsIgnoreCase(overriddenInputMimeType) && overriddenInputMimeType != null) {
                 inputMimeType = overriddenInputMimeType;
             }
@@ -163,7 +162,9 @@ public class DatasonnetProcessor implements Processor {
 
         if (outputMimeType == null || "".equalsIgnoreCase(outputMimeType.trim())) {
             //Try to auto-detect input mime type if it was not explicitly set
-            String overriddenOutputMimeType = (String) exchange.getProperty("outputMimeType", (String) exchange.getIn().getHeader("outputMimeType", "UNKNOWN_MIME_TYPE"));
+            String overriddenOutputMimeType = (String) exchange.getProperty("outputMimeType",
+                                                                            (String) exchange.getIn().getHeader("outputMimeType",
+                                                                            "UNKNOWN_MIME_TYPE"));
             if (!"UNKNOWN_MIME_TYPE".equalsIgnoreCase(overriddenOutputMimeType) && overriddenOutputMimeType != null) {
                 outputMimeType = overriddenOutputMimeType;
             }
@@ -321,7 +322,8 @@ public class DatasonnetProcessor implements Processor {
             } else {
                 sb.append('_');
             }
-        };
+        }
+        ;
         return sb.toString();
     }
 }
