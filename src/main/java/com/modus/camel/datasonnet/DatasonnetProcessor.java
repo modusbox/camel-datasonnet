@@ -191,22 +191,17 @@ public class DatasonnetProcessor implements Processor {
         Map<String, Document> jsonnetVars = new HashMap<>();
 
         for (String varName : exchange.getProperties().keySet()) {
-            Object varValue = exchange.getProperty(varName);
+            String varValueStr = exchange.getProperty(varName, String.class);
 
-            if (varValue instanceof Serializable) {
-                String varValueStr = varValue.toString();
-                try {
-                    JsonNode jsonNode = jacksonMapper.readTree(varValueStr);
-                    //This is valid JSON
-                    jsonnetVars.put(convert(varName), new StringDocument(varValueStr, "application/json"));
-                } catch (Exception e) {
-                    //Not a valid JSON, convert
+            try {
+                JsonNode jsonNode = jacksonMapper.readTree(varValueStr);
+                //This is valid JSON
+                jsonnetVars.put(convert(varName), new StringDocument(varValueStr, "application/json"));
+            } catch (Exception e) {
+                //Not a valid JSON, convert
 //                    varValueStr = jacksonMapper.writeValueAsString(varValueStr);
-                    //TODO - how do we support Java, XML and CSV properties?
-                    jsonnetVars.put(convert(varName), new StringDocument(varValueStr, "text/plain"));
-                }
-            } else {
-                logger.warn("Exchange property {} is not serializable, skipping.", varName);
+                //TODO - how do we support Java, XML and CSV properties?
+                jsonnetVars.put(convert(varName), new StringDocument(varValueStr, "text/plain"));
             }
         }
 
