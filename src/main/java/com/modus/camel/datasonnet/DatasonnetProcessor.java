@@ -194,7 +194,7 @@ public class DatasonnetProcessor implements Processor {
             String varValueStr = exchange.getProperty(varName, String.class);
 
             try {
-                JsonNode jsonNode = jacksonMapper.readTree(varValueStr);
+                jacksonMapper.readTree(varValueStr);
                 //This is valid JSON
                 jsonnetVars.put(convert(varName), new StringDocument(varValueStr, "application/json"));
             } catch (Exception e) {
