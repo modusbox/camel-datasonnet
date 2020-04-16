@@ -18,7 +18,7 @@ To use the DataSonnet module in your application, add the following dependency t
 ```
 # Usage
 
-To transform a payload using DataSonnet, use the following processor example:
+To transform a payload and additional properties using DataSonnet, use the following processor example:
 
 ```
 <bean id="basicTransform" class="com.modus.camel.datasonnet.DatasonnetProcessor" init-method="init">
@@ -32,13 +32,13 @@ To transform a payload using DataSonnet, use the following processor example:
         <from uri="direct:basicTransform"/>
 
         <setProperty name="test">
-            <constant>HelloWorld</constant>
+            <simple>HelloWorld</simple>
         </setProperty>
         <setProperty name="count">
-            <constant>1</constant>
+            <simple resultType="java.lang.Integer">1</simple>
         </setProperty>
         <setProperty name="isActive">
-            <constant>true</constant>
+            <simple resultType="java.lang.Boolean">true</simple>
         </setProperty>
 
         <process ref="basicTransform"/>
@@ -58,6 +58,18 @@ The `Datasonnet` bean has the following properties:
 | `inputMimeType` | no | expected mime type of the inbound payload. Default is `application/json`|
 | `outputMimeType` | no | the mime type of the resulting transformation. Default is `application/json`|
 | `librariesPath` | no | list of directories separated by system path separator where the processor will search for named imports (i.e. all files with extension `.libsonnet`. If not set, the processor will search in the classpath (including JARs).  |
+
+# Accessing Exchange Properties and Message Headers
+The `exchangeProperty` and `header` variables are passed to the mapping. If property or header name is not a valid identifier, i.e. contains spaces or special characters, or starts with a number, it still can be accessed using the `[""]` notation.
+
+```
+{
+    "uname": payload.name,
+    "testVar": exchangeProperty.test,
+    "propertyWithSpace": exchangeProperty["File Name"],
+    "requestedContentType": header["Content-Type"]
+}
+```
 
 # Controlling Input and Output MIME Types
 By default, Datasonnet consumes and produces data of the `application/json` type. However, if other data types are expected, this behavior can be changed by setting properties explicitly. The following are supported:

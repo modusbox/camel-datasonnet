@@ -29,9 +29,9 @@
         <property name="datasonnetScript" value="{
                                                     &quot;uid&quot;: payload.userId,
                                                     &quot;uname&quot;: payload.name,
-                                                    &quot;testVar&quot;: test,
-                                                    &quot;isActive&quot;: isActive,
-                                                    &quot;count&quot;: count
+                                                    &quot;testVar&quot;: exchangeProperty.test,
+                                                    &quot;isActive&quot;: exchangeProperty.isActive,
+                                                    &quot;count&quot;: exchangeProperty.count
                                                 }"/>
     </bean>
     <bean id="namedImports" class="com.modus.camel.datasonnet.DatasonnetProcessor" init-method="init">
@@ -58,10 +58,10 @@
                 <constant>HelloWorld</constant>
             </setProperty>
             <setProperty name="count">
-                <constant>1</constant>
+                <simple resultType="java.lang.Integer">1</simple>
             </setProperty>
             <setProperty name="isActive">
-                <constant>true</constant>
+                <simple resultType="java.lang.Boolean">true</simple>
             </setProperty>
 
             <process ref="basicTransform"/>
@@ -85,13 +85,13 @@
             <from uri="direct:datasonnetScript"/>
 
             <setProperty name="test">
-                <constant>HelloWorld</constant>
+                <simple>HelloWorld</simple>
             </setProperty>
             <setProperty name="count">
-                <constant>1</constant>
+                <simple resultType="java.lang.Integer">1</simple>
             </setProperty>
             <setProperty name="isActive">
-                <constant>true</constant>
+                <simple resultType="java.lang.Boolean">true</simple>
             </setProperty>
 
             <process ref="datasonnetScript"/>

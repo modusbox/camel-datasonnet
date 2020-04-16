@@ -190,51 +190,27 @@ public class DatasonnetProcessor implements Processor {
 
         Map<String, Document> jsonnetVars = new HashMap<>();
 
-        for (String varName : exchange.getProperties().keySet()) {
-            String varValueStr = exchange.getProperty(varName, String.class);
+//        for (String varName : exchange.getProperties().keySet()) {
+//            String varValueStr = exchange.getProperty(varName, String.class);
+//
+//            try {
+//                jacksonMapper.readTree(varValueStr);
+//                //This is valid JSON
+//                jsonnetVars.put(convert(varName), new StringDocument(varValueStr, "application/json"));
+//            } catch (Exception e) {
+//                //Not a valid JSON, convert
+////                    varValueStr = jacksonMapper.writeValueAsString(varValueStr);
+//                //TODO - how do we support Java, XML and CSV properties?
+//                jsonnetVars.put(convert(varName), new StringDocument(varValueStr, "text/plain"));
+//            }
+//        }
 
-            try {
-                jacksonMapper.readTree(varValueStr);
-                //This is valid JSON
-                jsonnetVars.put(convert(varName), new StringDocument(varValueStr, "application/json"));
-            } catch (Exception e) {
-                //Not a valid JSON, convert
-//                    varValueStr = jacksonMapper.writeValueAsString(varValueStr);
-                //TODO - how do we support Java, XML and CSV properties?
-                jsonnetVars.put(convert(varName), new StringDocument(varValueStr, "text/plain"));
-            }
-        }
-
-        //TODO - is there a better way to handle this?
-        Map<String, Object> camelHeaders = new HashMap<>();
-
-        Iterator<Map.Entry<String, Object>> entryIterator = exchange.getMessage().getHeaders().entrySet().iterator();
-
-        while (entryIterator.hasNext()) {
-            Map.Entry<String, Object> entry = entryIterator.next();
-
-            Object headerValue = entry.getValue();
-            String headerClassName = (headerValue != null ? headerValue.getClass().getName() : " NULL ");
-
-            if (headerValue == null || !(headerValue instanceof Serializable)) {
-                logger.debug("Header " + entry.getKey() + " is null or not Serializable : " + headerClassName + " ; removing");
-                //entryIterator.remove();
-            } else {
-                try {
-                    jacksonMapper.writeValueAsString(headerValue);
-                    logger.debug("Header " + entry.getKey() + " is Serializable : " + headerClassName);
-                    camelHeaders.put(convert(entry.getKey()), headerValue);
-                } catch (Exception e) {
-                    logger.debug("Header " + entry.getKey() + " cannot be serialized; removing : " + e.getMessage());
-                    entryIterator.remove();
-                }
-            }
-        }
-
-        String headersJson = jacksonMapper.writeValueAsString(camelHeaders);
-        Document headersDocument = new StringDocument(headersJson, "application/json");
+        Document headersDocument = exchangeToDocument(exchange.getMessage().getHeaders().entrySet().iterator());
         jsonnetVars.put("headers", headersDocument);
         jsonnetVars.put("header", headersDocument);
+
+        Document propertiesDocument = exchangeToDocument(exchange.getProperties().entrySet().iterator());
+        jsonnetVars.put("exchangeProperty", propertiesDocument);
 
         Object body = (inputMimeType.contains("java") ? exchange.getMessage().getBody() : exchange.getMessage().getBody(java.lang.String.class));
 
@@ -277,7 +253,7 @@ public class DatasonnetProcessor implements Processor {
         } else {
             mimeType = "application/json";
             try {
-                JsonNode jsonNode = jacksonMapper.readTree(content.toString());
+                jacksonMapper.readTree(content.toString());
                 logger.debug("Content is valid JSON");
                 //This is valid JSON
             } catch (Exception e) {
@@ -318,5 +294,32 @@ public class DatasonnetProcessor implements Processor {
         }
         ;
         return sb.toString();
+    }
+
+    private Document exchangeToDocument(Iterator<Map.Entry<String, Object>> entryIterator) throws Exception {
+        Map<String, Object> jsonMap = new HashMap<>();
+
+        while (entryIterator.hasNext()) {
+            Map.Entry<String, Object> entry = entryIterator.next();
+
+            Object entryValue = entry.getValue();
+            String entryClassName = (entryValue != null ? entryValue.getClass().getName() : " NULL ");
+
+            if (entryValue != null && entryValue instanceof Serializable) {
+                try {
+                    jacksonMapper.writeValueAsString(entryValue);
+                    jsonMap.put(entry.getKey(), entryValue);
+                } catch (Exception e) {
+                    logger.debug("Header or property " + entry.getKey() + " cannot be serialized as JSON; removing : " + e.getMessage());
+                }
+            } else {
+                logger.debug("Header or property " + entry.getKey() + " is null or not Serializable : " + entryClassName);
+            }
+        }
+
+        String json = jacksonMapper.writeValueAsString(jsonMap);
+        Document document = new StringDocument(json, "application/json");
+
+        return document;
     }
 }

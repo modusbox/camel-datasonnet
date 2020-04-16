@@ -124,6 +124,7 @@ public class CamelDatasonnetTest {
         template.sendBody(uri, payload);
         Exchange exchange = mock.assertExchangeReceived(mock.getReceivedCounter() - 1);
         String response = exchange.getIn().getBody().toString();
+        System.out.println("RESPONSE IS " + response);
         JSONAssert.assertEquals(expectedJson, response, true);
     }
 
