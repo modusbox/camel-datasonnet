@@ -31,7 +31,8 @@
                                                     &quot;uname&quot;: payload.name,
                                                     &quot;testVar&quot;: exchangeProperty.test,
                                                     &quot;isActive&quot;: exchangeProperty.isActive,
-                                                    &quot;count&quot;: exchangeProperty.count
+                                                    &quot;count&quot;: exchangeProperty.count,
+                                                    &quot;fullName&quot;: exchangeProperty[&quot;1. Full Name&quot;]
                                                 }"/>
     </bean>
     <bean id="namedImports" class="com.modus.camel.datasonnet.DatasonnetProcessor" init-method="init">
@@ -63,6 +64,9 @@
             <setProperty name="isActive">
                 <simple resultType="java.lang.Boolean">true</simple>
             </setProperty>
+            <setProperty name="1. Full Name">
+                <constant>DataSonnet</constant>
+            </setProperty>
 
             <process ref="basicTransform"/>
 
@@ -92,6 +96,9 @@
             </setProperty>
             <setProperty name="isActive">
                 <simple resultType="java.lang.Boolean">true</simple>
+            </setProperty>
+            <setProperty name="1. Full Name">
+                <constant>DataSonnet</constant>
             </setProperty>
 
             <process ref="datasonnetScript"/>

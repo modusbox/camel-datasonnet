@@ -94,14 +94,6 @@
             <version>${camel.version}</version>
             <scope>test</scope>
         </dependency>
-<!--
-        <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-spring-boot-starter</artifactId>
-            <version>${camel.version}</version>
-            <scope>test</scope>
-        </dependency>
--->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

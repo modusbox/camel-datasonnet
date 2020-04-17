@@ -168,10 +168,9 @@ public class DatasonnetProcessor implements Processor {
             logger.warn("Input Mime Type " + inputMimeType + " is not supported or suitable plugin not found, using application/json");
             inputMimeType = "application/json";
         }
-        //logger.debug("Input mime type is: " + inputMimeType);
 
         if (outputMimeType == null || "".equalsIgnoreCase(outputMimeType.trim())) {
-            //Try to auto-detect input mime type if it was not explicitly set
+            //Try to auto-detect output mime type if it was not explicitly set
             String overriddenOutputMimeType = (String) exchange.getProperty("outputMimeType",
                                                                             (String) exchange.getIn().getHeader("outputMimeType",
                                                                             "UNKNOWN_MIME_TYPE"));
@@ -189,21 +188,6 @@ public class DatasonnetProcessor implements Processor {
         }
 
         Map<String, Document> jsonnetVars = new HashMap<>();
-
-//        for (String varName : exchange.getProperties().keySet()) {
-//            String varValueStr = exchange.getProperty(varName, String.class);
-//
-//            try {
-//                jacksonMapper.readTree(varValueStr);
-//                //This is valid JSON
-//                jsonnetVars.put(convert(varName), new StringDocument(varValueStr, "application/json"));
-//            } catch (Exception e) {
-//                //Not a valid JSON, convert
-////                    varValueStr = jacksonMapper.writeValueAsString(varValueStr);
-//                //TODO - how do we support Java, XML and CSV properties?
-//                jsonnetVars.put(convert(varName), new StringDocument(varValueStr, "text/plain"));
-//            }
-//        }
 
         Document headersDocument = exchangeToDocument(exchange.getMessage().getHeaders().entrySet().iterator());
         jsonnetVars.put("headers", headersDocument);
@@ -270,34 +254,8 @@ public class DatasonnetProcessor implements Processor {
         return document;
     }
 
-    private String convert(String ident) {
-        if (ident.length() == 0) {
-            return "_";
-        }
-        CharacterIterator ci = new StringCharacterIterator(ident);
-        StringBuilder sb = new StringBuilder();
-        for (char c = ci.first(); c != CharacterIterator.DONE; c = ci.next()) {
-            if (c == ' ')
-                c = '_';
-            if (sb.length() == 0) {
-                if (Character.isJavaIdentifierStart(c)) {
-                    sb.append(c);
-                    continue;
-                } else
-                    sb.append('_');
-            }
-            if (Character.isJavaIdentifierPart(c)) {
-                sb.append(c);
-            } else {
-                sb.append('_');
-            }
-        }
-        ;
-        return sb.toString();
-    }
-
     private Document exchangeToDocument(Iterator<Map.Entry<String, Object>> entryIterator) throws Exception {
-        Map<String, Object> jsonMap = new HashMap<>();
+        Map<String, Object> propsMap = new HashMap<>();
 
         while (entryIterator.hasNext()) {
             Map.Entry<String, Object> entry = entryIterator.next();
@@ -308,7 +266,7 @@ public class DatasonnetProcessor implements Processor {
             if (entryValue != null && entryValue instanceof Serializable) {
                 try {
                     jacksonMapper.writeValueAsString(entryValue);
-                    jsonMap.put(entry.getKey(), entryValue);
+                    propsMap.put(entry.getKey(), entryValue);
                 } catch (Exception e) {
                     logger.debug("Header or property " + entry.getKey() + " cannot be serialized as JSON; removing : " + e.getMessage());
                 }
@@ -317,9 +275,7 @@ public class DatasonnetProcessor implements Processor {
             }
         }
 
-        String json = jacksonMapper.writeValueAsString(jsonMap);
-        Document document = new StringDocument(json, "application/json");
-
+        Document document = new JavaObjectDocument(propsMap);
         return document;
     }
 }
