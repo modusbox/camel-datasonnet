@@ -57,7 +57,7 @@ public class DatasonnetExpression extends ExpressionAdapter implements AfterProp
         try {
             processor.init();
         } catch (Exception e) {
-            logger.error("Unable to initiate DataSonnet processor: ", e);
+            throw new RuntimeExpressionException("Unable to initialize DataSonnet processor : ", e);
         }
     }
 
