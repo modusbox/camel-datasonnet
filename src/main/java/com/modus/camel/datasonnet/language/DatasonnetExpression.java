@@ -8,7 +8,7 @@ import org.apache.camel.support.component.PropertyConfigurerSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DatasonnetExpression extends ExpressionAdapter implements AfterPropertiesConfigured, GeneratedPropertyConfigurer {
+public class DatasonnetExpression extends ExpressionAdapter implements GeneratedPropertyConfigurer {
     private final String expression;
 
     private String inputMimeType;
@@ -49,15 +49,6 @@ public class DatasonnetExpression extends ExpressionAdapter implements AfterProp
             return exchange.getContext().getTypeConverter().convertTo(type, value);
         } catch (Exception e) {
             throw new RuntimeExpressionException("Unable to evaluate DataSonnet expression : ", e);
-        }
-    }
-
-    @Override
-    public void afterPropertiesConfigured(CamelContext camelContext) {
-        try {
-            processor.init();
-        } catch (Exception e) {
-            throw new RuntimeExpressionException("Unable to initialize DataSonnet processor : ", e);
         }
     }
 
