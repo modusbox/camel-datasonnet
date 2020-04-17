@@ -168,12 +168,6 @@
             <name>PortX Snapshots Repository</name>
             <url>https://portx.jfrog.io/portx/portx-snapshots</url>
         </repository>
-        <repository>
-            <id>mulesoft-releases</id>
-            <name>MuleSoft Releases Repository</name>
-            <url>http://repository.mulesoft.org/releases/</url>
-            <layout>default</layout>
-        </repository>
     </repositories>
 
     <distributionManagement>
