@@ -17,12 +17,7 @@ public class DatasonnetLanguage extends LanguageSupport {
 
     @Override
     public DatasonnetExpression createExpression(String expression) {
-        try {
-            DatasonnetExpression datasonnetExpression = new DatasonnetExpression(expression);
-            return datasonnetExpression;
-        } catch (Exception e) {
-            logger.error("Unable to create DataSonnet expression: ", e);
-            return null;
-        }
+        DatasonnetExpression datasonnetExpression = new DatasonnetExpression(expression);
+        return datasonnetExpression;
     }
 }

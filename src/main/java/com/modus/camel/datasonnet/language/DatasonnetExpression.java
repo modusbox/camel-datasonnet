@@ -1,10 +1,7 @@
 package com.modus.camel.datasonnet.language;
 
 import com.modus.camel.datasonnet.DatasonnetProcessor;
-import org.apache.camel.AfterPropertiesConfigured;
-import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
-import org.apache.camel.Expression;
+import org.apache.camel.*;
 import org.apache.camel.spi.GeneratedPropertyConfigurer;
 import org.apache.camel.support.ExpressionAdapter;
 import org.apache.camel.support.component.PropertyConfigurerSupport;
@@ -23,11 +20,15 @@ public class DatasonnetExpression extends ExpressionAdapter implements AfterProp
 
     private static Logger logger = LoggerFactory.getLogger(DatasonnetExpression.class);
 
-    public DatasonnetExpression(String expression) throws Exception {
+    public DatasonnetExpression(String expression) {
         this.expression = expression;
         processor = new DatasonnetProcessor();
         processor.setDatasonnetScript(expression);
-        processor.init();
+        try {
+            processor.init();
+        } catch (Exception e) {
+            throw new RuntimeExpressionException("Unable to initialize DataSonnet processor : ", e);
+        }
     }
 
     @Override
@@ -47,8 +48,7 @@ public class DatasonnetExpression extends ExpressionAdapter implements AfterProp
             Object value = processor.processMapping(exchange);
             return exchange.getContext().getTypeConverter().convertTo(type, value);
         } catch (Exception e) {
-            logger.error("Unable to evaluate expression: ", e);
-            return null;
+            throw new RuntimeExpressionException("Unable to evaluate DataSonnet expression : ", e);
         }
     }
 
