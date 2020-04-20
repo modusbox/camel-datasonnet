@@ -189,11 +189,11 @@ public class DatasonnetProcessor implements Processor {
 
         Map<String, Document> jsonnetVars = new HashMap<>();
 
-        Document headersDocument = exchangeToDocument(exchange.getMessage().getHeaders().entrySet().iterator());
+        Document headersDocument = mapToDocument(exchange.getMessage().getHeaders());
         jsonnetVars.put("headers", headersDocument);
         jsonnetVars.put("header", headersDocument);
 
-        Document propertiesDocument = exchangeToDocument(exchange.getProperties().entrySet().iterator());
+        Document propertiesDocument = mapToDocument(exchange.getProperties());
         jsonnetVars.put("exchangeProperty", propertiesDocument);
 
         Object body = (inputMimeType.contains("java") ? exchange.getMessage().getBody() : exchange.getMessage().getBody(java.lang.String.class));
@@ -254,7 +254,8 @@ public class DatasonnetProcessor implements Processor {
         return document;
     }
 
-    private Document exchangeToDocument(Iterator<Map.Entry<String, Object>> entryIterator) throws Exception {
+    private Document mapToDocument(Map<String, Object> map) throws Exception {
+        Iterator<Map.Entry<String, Object>> entryIterator = map.entrySet().iterator();
         Map<String, Object> propsMap = new HashMap<>();
 
         while (entryIterator.hasNext()) {
