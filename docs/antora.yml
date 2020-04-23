@@ -1,6 +1,6 @@
 name: camel
 title: Camel DataSonnet Component
-version: '1.0-SNAPSHOT'
+version: '1.0.2-SNAPSHOT'
 start_page: ROOT:index.adoc
 nav:
   - modules/ROOT/nav.adoc

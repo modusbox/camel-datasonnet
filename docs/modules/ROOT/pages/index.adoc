@@ -49,7 +49,7 @@ To transform a payload and additional properties using DataSonnet, use the follo
 </camelContext>
 -------------
 
-The `Datasonnet` bean has the following properties:
+The `DatasonnetProcessor` bean has the following properties:
 
 [%header, cols=3*a]
 |===
@@ -111,7 +111,7 @@ This behavior can be overridden by setting the `librariesPath` property of the p
 
 ## Expression Language Support
 
-Datasonnet can be used as an inline expression language. For example:
+DataSonnet can be used as an inline expression language. For example:
 
 [source,xml]
 ----
@@ -144,7 +144,7 @@ Datasonnet can be used as an inline expression language. For example:
 
 Since there are no additional attributes or parameters allowed for the `<language>` element, the input and output MIME types can be controlled by setting properties `inputMimeType` and `outputMimeType` prior to calling an expression.
 
-If you want to use Datasonnet expressions in the Camel Java DSL, you can use the https://github.com/modusbox/camel-datasonnet/blob/master/src/main/java/com/modus/camel/datasonnet/DatasonnetRouteBuilder.java[`DatasonnetRouterBuilder`] class and one of its `datasonnet()` functions, for example:
+If you want to use DataSonnet expressions in the Camel Java DSL, you can use the https://github.com/modusbox/camel-datasonnet/blob/master/src/main/java/com/modus/camel/datasonnet/DatasonnetRouteBuilder.java[`DatasonnetRouterBuilder`] class and one of its `datasonnet()` functions, for example:
 
 [source,java,numbered]
 new DatasonnetRouteBuilder() {
