@@ -1,13 +1,16 @@
-# Camel DataSonnet Module
+# Camel DataSonnet Component
+:toc:
+:toclevels: 1
+=================
 
-The DataSonnet module adds http://datasonnet.com[DataSonnet mapping language] support to Camel 3.x
+The Camel DataSonnet Component adds http://datasonnet.com[DataSonnet mapping language] support to Camel 3.x
 
 ## Camel supported versions
 Camel >= 3.0.0
 
 ## Installation
 
-To use the DataSonnet module in your application, add the following dependency to your `pom.xml`:
+To use the Camel DataSonnet Component in your application, add the following dependency to your `pom.xml`:
 
 [source,xml]
 <dependency>
