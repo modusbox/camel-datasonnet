@@ -1,0 +1,2 @@
+* xref:index.adoc[Installation and Usage]
+* xref:datasonnet:ROOT:index.adoc[Back to DataSonnet Documentation]
