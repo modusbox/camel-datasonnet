@@ -1,6 +1,6 @@
 # Camel DataSonnet Module
 
-The DataSonnet module adds [DataSonnet mapping language](http://datasonnet.com) support to Camel 3.x
+The DataSonnet module adds http://datasonnet.com[DataSonnet mapping language] support to Camel 3.x
 
 ## Camel supported versions
 Camel >= 3.0.0
@@ -144,7 +144,7 @@ Datasonnet can be used as an inline expression language. For example:
 
 Since there are no additional attributes or parameters allowed for the `<language>` element, the input and output MIME types can be controlled by setting properties `inputMimeType` and `outputMimeType` prior to calling an expression.
 
-If you want to use Datasonnet expressions in the Camel Java DSL, you can use the `DatasonnetRouterBuilder` class and one of its `datasonnet()` functions, for example:
+If you want to use Datasonnet expressions in the Camel Java DSL, you can use the https://github.com/modusbox/camel-datasonnet/blob/master/src/main/java/com/modus/camel/datasonnet/DatasonnetRouteBuilder.java[`DatasonnetRouterBuilder`] class and one of its `datasonnet()` functions, for example:
 
 [source,java,numbered]
 new DatasonnetRouteBuilder() {
@@ -172,6 +172,6 @@ public void configure() throws Exception {
         .to("mock:direct:response");
 }
 
-See the `DatasonnetRouterBuilder` class for more details.
+See the https://github.com/modusbox/camel-datasonnet/blob/master/src/main/java/com/modus/camel/datasonnet/DatasonnetRouteBuilder.java[`DatasonnetRouterBuilder`] class for more details.
 
 
