@@ -1,5 +1,5 @@
 name: camel
-title: Camel DataSonnet Component
+title: Camel Component
 version: '1.0.2-SNAPSHOT'
 start_page: ROOT:index.adoc
 nav:
