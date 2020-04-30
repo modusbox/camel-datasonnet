@@ -6,6 +6,7 @@ import com.datasonnet.document.JavaObjectDocument;
 import com.datasonnet.document.StringDocument;
 import com.datasonnet.spi.DataFormatPlugin;
 import com.datasonnet.spi.DataFormatService;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -60,6 +61,7 @@ public class DatasonnetProcessor implements Processor {
         logger.debug("Initializing mapping bean...");
 
         jacksonMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        jacksonMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
         if (getDatasonnetFile() != null) {
             //TODO - support URLs like 'file://' and/or 'classpath:'
@@ -217,12 +219,10 @@ public class DatasonnetProcessor implements Processor {
     }
 
     private Document createDocument(Object content, String type) throws JsonProcessingException {
-        ObjectMapper jacksonMapper = new ObjectMapper();
-
         Document document = null;
         boolean isObject = false;
         String mimeType = type;
-        String documentContent = content.toString();
+        String documentContent = (content == null ? "" : content.toString());
 
         logger.debug("Before create Document Content is: " + documentContent);
         logger.debug("Before create mimeType is: " + mimeType);
@@ -237,7 +237,10 @@ public class DatasonnetProcessor implements Processor {
         } else {
             mimeType = "application/json";
             try {
-                jacksonMapper.readTree(content.toString());
+                if (documentContent == null || "".equalsIgnoreCase(documentContent.toString())) {
+                    documentContent = "{}";
+                }
+                jacksonMapper.readTree(documentContent);
                 logger.debug("Content is valid JSON");
                 //This is valid JSON
             } catch (Exception e) {

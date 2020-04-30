@@ -148,6 +148,20 @@
             <to uri="mock:direct:end"/>
         </route>
 
+        <route id="nullInput">
+            <from uri="direct:nullInput"/>
+
+            <setBody>
+                <language language="datasonnet">
+                    {
+                        test: "Hello, World"
+                    }
+                </language>
+            </setBody>
+
+            <to uri="mock:direct:end"/>
+        </route>
+
     </camelContext>
 
 </beans>
