@@ -48,7 +48,7 @@ public class DatasonnetExpression extends ExpressionAdapter implements Generated
             Object value = processor.processMapping(exchange);
             return exchange.getContext().getTypeConverter().convertTo(type, value);
         } catch (Exception e) {
-            throw new RuntimeExpressionException("Unable to evaluate DataSonnet expression : ", e);
+            throw new RuntimeExpressionException("Unable to evaluate DataSonnet expression : " + expression, e);
         }
     }
 
