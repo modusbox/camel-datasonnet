@@ -13,7 +13,7 @@ To use the DataSonnet module in your application, add the following dependency t
 <dependency>
     <groupId>com.modus.camel.datasonnet</groupId>
     <artifactId>camel-datasonnet</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>...</version>
 </dependency>
 ```
 # Usage
