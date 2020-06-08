@@ -139,9 +139,11 @@
             </setHeader>
             <setBody>
                 <language language="datasonnet">
+                    <![CDATA[
                     {
                         test: headers.HelloHeader
                     }
+                    ]]>
                 </language>
             </setBody>
 
