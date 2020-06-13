@@ -1,7 +1,10 @@
 package com.modus.camel.datasonnet.language;
 
 import com.modus.camel.datasonnet.DatasonnetProcessor;
-import org.apache.camel.*;
+import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.Expression;
+import org.apache.camel.RuntimeExpressionException;
 import org.apache.camel.spi.GeneratedPropertyConfigurer;
 import org.apache.camel.support.ExpressionAdapter;
 import org.apache.camel.support.component.PropertyConfigurerSupport;
