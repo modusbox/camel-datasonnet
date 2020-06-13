@@ -1,7 +1,6 @@
 package com.modus.camel.datasonnet.test;
 
 import com.modus.camel.datasonnet.DatasonnetRouteBuilder;
-import com.modus.camel.datasonnet.language.model.DatasonnetExpression;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.Produce;

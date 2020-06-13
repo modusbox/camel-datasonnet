@@ -31,6 +31,16 @@ public class DatasonnetExpression extends ExpressionAdapter implements Generated
         }
     }
 
+    public DatasonnetExpression(Expression expression) {
+        this.innerExpression = expression;
+        processor = new DatasonnetProcessor();
+        try {
+            processor.init();
+        } catch (Exception e) {
+            throw new RuntimeExpressionException("Unable to initialize DataSonnet processor : ", e);
+        }
+    }
+
     @Override
     public String toString() {
         return "datasonnet: " + expression;

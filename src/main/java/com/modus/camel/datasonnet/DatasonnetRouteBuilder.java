@@ -1,6 +1,6 @@
 package com.modus.camel.datasonnet;
 
-import com.modus.camel.datasonnet.language.model.DatasonnetExpression;
+import com.modus.camel.datasonnet.language.DatasonnetExpression;
 import org.apache.camel.Expression;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.ValueBuilder;
