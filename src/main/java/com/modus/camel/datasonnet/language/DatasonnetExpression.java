@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DatasonnetExpression extends ExpressionAdapter implements GeneratedPropertyConfigurer {
-    private final String expression;
+    private String expression;
 
     private String inputMimeType;
     private String outputMimeType;
@@ -24,6 +24,16 @@ public class DatasonnetExpression extends ExpressionAdapter implements Generated
         this.expression = expression;
         processor = new DatasonnetProcessor();
         processor.setDatasonnetScript(expression);
+        try {
+            processor.init();
+        } catch (Exception e) {
+            throw new RuntimeExpressionException("Unable to initialize DataSonnet processor : ", e);
+        }
+    }
+
+    public DatasonnetExpression(Expression expression) {
+        this.innerExpression = expression;
+        processor = new DatasonnetProcessor();
         try {
             processor.init();
         } catch (Exception e) {
