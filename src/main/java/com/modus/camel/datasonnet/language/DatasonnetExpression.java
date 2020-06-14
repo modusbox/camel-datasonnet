@@ -54,6 +54,7 @@ public class DatasonnetExpression extends ExpressionAdapter implements Generated
         try {
             if (innerExpression != null) {
                 String script = innerExpression.evaluate(exchange, String.class);
+                expression = script;
                 processor.setDatasonnetScript(script);
             }
             processor.setInputMimeType(getInputMimeType());
