@@ -17,6 +17,7 @@ import io.github.classgraph.ResourceList;
 import io.github.classgraph.ScanResult;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.support.MessageHelper;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -198,7 +199,7 @@ public class DatasonnetProcessor implements Processor {
         Document propertiesDocument = mapToDocument(exchange.getProperties());
         jsonnetVars.put("exchangeProperty", propertiesDocument);
 
-        Object body = (inputMimeType.contains("java") ? exchange.getMessage().getBody() : exchange.getMessage().getBody(java.lang.String.class));
+        Object body = (inputMimeType.contains("java") ? exchange.getMessage().getBody() : MessageHelper.extractBodyAsString(exchange.getMessage()));
 
         logger.debug("Input MIME type is " + inputMimeType);
         logger.debug("Output MIME type is: " + outputMimeType);
