@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DatasonnetExpression extends ExpressionAdapter implements GeneratedPropertyConfigurer {
-    private final String expression;
+    private String expression;
 
     private String inputMimeType;
     private String outputMimeType;
@@ -41,6 +41,7 @@ public class DatasonnetExpression extends ExpressionAdapter implements Generated
         try {
             if (innerExpression != null) {
                 String script = innerExpression.evaluate(exchange, String.class);
+                expression = script;
                 processor.setDatasonnetScript(script);
             }
             processor.setInputMimeType(getInputMimeType());
