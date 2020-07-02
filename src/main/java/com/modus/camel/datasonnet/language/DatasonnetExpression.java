@@ -1,7 +1,10 @@
 package com.modus.camel.datasonnet.language;
 
 import com.modus.camel.datasonnet.DatasonnetProcessor;
-import org.apache.camel.*;
+import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.Expression;
+import org.apache.camel.RuntimeExpressionException;
 import org.apache.camel.spi.GeneratedPropertyConfigurer;
 import org.apache.camel.support.ExpressionAdapter;
 import org.apache.camel.support.component.PropertyConfigurerSupport;
@@ -9,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DatasonnetExpression extends ExpressionAdapter implements GeneratedPropertyConfigurer {
-    private final String expression;
+    private String expression;
 
     private String inputMimeType;
     private String outputMimeType;
@@ -24,6 +27,16 @@ public class DatasonnetExpression extends ExpressionAdapter implements Generated
         this.expression = expression;
         processor = new DatasonnetProcessor();
         processor.setDatasonnetScript(expression);
+        try {
+            processor.init();
+        } catch (Exception e) {
+            throw new RuntimeExpressionException("Unable to initialize DataSonnet processor : ", e);
+        }
+    }
+
+    public DatasonnetExpression(Expression expression) {
+        this.innerExpression = expression;
+        processor = new DatasonnetProcessor();
         try {
             processor.init();
         } catch (Exception e) {

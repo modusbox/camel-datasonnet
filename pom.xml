@@ -6,13 +6,13 @@
 
     <groupId>com.modus.camel.datasonnet</groupId>
     <artifactId>camel-datasonnet</artifactId>
-    <version>1.0.4-SNAPSHOT</version>
+    <version>1.0.5-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <camel.version>3.0.1</camel.version>
+        <camel.version>3.3.0</camel.version>
         <spring-boot.version>2.3.0.RELEASE</spring-boot.version>
         <datasonnet.version>1.0.5-SNAPSHOT</datasonnet.version>
         <junit.version>4.12</junit.version>

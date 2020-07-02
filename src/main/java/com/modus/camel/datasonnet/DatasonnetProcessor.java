@@ -8,7 +8,6 @@ import com.datasonnet.spi.DataFormatPlugin;
 import com.datasonnet.spi.DataFormatService;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.github.classgraph.ClassGraph;
@@ -31,8 +30,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.text.CharacterIterator;
-import java.text.StringCharacterIterator;
 import java.util.*;
 
 public class DatasonnetProcessor implements Processor {
@@ -40,7 +37,7 @@ public class DatasonnetProcessor implements Processor {
     private List<String> librariesPath;
 
     private Map<String, String> namedImports = new HashMap<>();
-    private List<String> supportedMimeTypes = new ArrayList<>(Arrays.asList(new String[]{"application/json"}));
+    private List<String> supportedMimeTypes = new ArrayList<>(Arrays.asList("application/json"));
 
     private static Logger logger = LoggerFactory.getLogger(DatasonnetProcessor.class);
 

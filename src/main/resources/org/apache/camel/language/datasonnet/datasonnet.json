@@ -7,13 +7,13 @@
     "description": "To use Datasonnet scripts in Camel expressions or predicates.",
     "deprecated": false,
     "deprecationNote": "language,datasonnet",
-    "firstVersion": "1.0.0",
+    "firstVersion": "3.0.1",
     "label": "language,datasonnet",
     "javaType": "com.modus.camel.datasonnet.language.DatasonnetLanguage",
     "modelJavaType": "com.modus.camel.datasonnet.language.model.DatasonnetExpression",
-    "groupId": "1.0.2-SNAPSHOT",
+    "groupId": "com.modus.camel.datasonnet",
     "artifactId": "camel-datasonnet",
-    "version": "1.0.2-SNAPSHOT"
+    "version": "1.0.5-SNAPSHOT"
   },
   "properties": {
     "expression": { "kind": "value", "displayName": "Expression", "required": true, "type": "string", "javaType": "java.lang.String", "deprecated": false, "secret": false, "description": "The expression value in your chosen language syntax" },
