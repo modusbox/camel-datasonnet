@@ -57,9 +57,7 @@ public class DatasonnetExpression extends ExpressionAdapter implements Generated
                 expression = script;
                 processor.setDatasonnetScript(script);
             }
-            processor.setInputMimeType(getInputMimeType());
-            processor.setOutputMimeType(getOutputMimeType());
-            Object value = processor.processMapping(exchange);
+            Object value = processor.processMapping(exchange, getInputMimeType(), getOutputMimeType());
             return exchange.getContext().getTypeConverter().convertTo(type, value);
         } catch (Exception e) {
             throw new RuntimeExpressionException("Unable to evaluate DataSonnet expression : " + expression, e);
