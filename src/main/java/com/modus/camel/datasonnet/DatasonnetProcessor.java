@@ -56,7 +56,7 @@ public class DatasonnetProcessor implements Processor {
     ObjectMapper jacksonMapper = new ObjectMapper();
 
     public void process(Exchange exchange) throws Exception {
-        Object mappedBody = processMapping(exchange);
+        Object mappedBody = processMapping(exchange, getInputMimeType(), getOutputMimeType());
         exchange.getIn().setBody(mappedBody);
     }
 
@@ -159,33 +159,36 @@ public class DatasonnetProcessor implements Processor {
         this.datasonnetScript = datasonnetScript;
     }
 
-    public Object processMapping(Exchange exchange) throws Exception {
-        if (inputMimeType == null || "".equalsIgnoreCase(inputMimeType.trim())) {
+    public Object processMapping(Exchange exchange, String inputMime, String outputMime) throws Exception {
+        String _inputMimeType = inputMime;
+        String _outputMimeType = outputMime;
+
+        if (_inputMimeType == null || "".equalsIgnoreCase(_inputMimeType.trim())) {
             //Try to auto-detect input mime type if it was not explicitly set
             String overriddenInputMimeType = (String) exchange.getProperty("inputMimeType",
                                                                             (String) exchange.getIn().getHeader(Exchange.CONTENT_TYPE,
                                                                 "UNKNOWN_MIME_TYPE"));
             if (!"UNKNOWN_MIME_TYPE".equalsIgnoreCase(overriddenInputMimeType) && overriddenInputMimeType != null) {
-                inputMimeType = overriddenInputMimeType;
+                _inputMimeType = overriddenInputMimeType;
             }
         }
-        if (!supportedMimeTypes.contains(inputMimeType)) {
-            logger.warn("Input Mime Type " + inputMimeType + " is not supported or suitable plugin not found, using application/json");
-            inputMimeType = "application/json";
+        if (!supportedMimeTypes.contains(_inputMimeType)) {
+            logger.warn("Input Mime Type " + _inputMimeType + " is not supported or suitable plugin not found, using application/json");
+            _inputMimeType = "application/json";
         }
 
-        if (outputMimeType == null || "".equalsIgnoreCase(outputMimeType.trim())) {
+        if (_outputMimeType == null || "".equalsIgnoreCase(_outputMimeType.trim())) {
             //Try to auto-detect output mime type if it was not explicitly set
             String overriddenOutputMimeType = (String) exchange.getProperty("outputMimeType",
                                                                             (String) exchange.getIn().getHeader("outputMimeType",
                                                                             "UNKNOWN_MIME_TYPE"));
             if (!"UNKNOWN_MIME_TYPE".equalsIgnoreCase(overriddenOutputMimeType) && overriddenOutputMimeType != null) {
-                outputMimeType = overriddenOutputMimeType;
+                _outputMimeType = overriddenOutputMimeType;
             }
         }
-        if (!supportedMimeTypes.contains(outputMimeType)) {
-            logger.warn("Output Mime Type " + outputMimeType + " is not supported or suitable plugin not found, using application/json");
-            outputMimeType = "application/json";
+        if (!supportedMimeTypes.contains(_outputMimeType)) {
+            logger.warn("Output Mime Type " + _outputMimeType + " is not supported or suitable plugin not found, using application/json");
+            _outputMimeType = "application/json";
         }
 
         if (getDatasonnetScript() == null) {
@@ -201,21 +204,21 @@ public class DatasonnetProcessor implements Processor {
         Document propertiesDocument = mapToDocument(exchange.getProperties());
         jsonnetVars.put("exchangeProperty", propertiesDocument);
 
-        Object body = (inputMimeType.contains("java") ? exchange.getMessage().getBody() : MessageHelper.extractBodyAsString(exchange.getMessage()));
+        Object body = (_inputMimeType.contains("java") ? exchange.getMessage().getBody() : MessageHelper.extractBodyAsString(exchange.getMessage()));
 
-        logger.debug("Input MIME type is " + inputMimeType);
-        logger.debug("Output MIME type is: " + outputMimeType);
+        logger.debug("Input MIME type is " + _inputMimeType);
+        logger.debug("Output MIME type is: " + _outputMimeType);
         logger.debug("Message Body is " + body);
         logger.debug("Variables are: " + jsonnetVars);
 
         //TODO we need a better solution going forward but for now we just differentiate between Java and text-based formats
-        Document payload = createDocument(body, inputMimeType);
+        Document payload = createDocument(body, _inputMimeType);
         jsonnetVars.put("body", payload);
 
         logger.debug("Document is: " + (payload.canGetContentsAs(String.class) ? payload.getContentsAsString() : payload.getContentsAsObject()));
 
         Mapper mapper = new Mapper(getDatasonnetScript(), jsonnetVars.keySet(), namedImports, true, true);
-        Document mappedDoc = mapper.transform(payload, jsonnetVars, getOutputMimeType());
+        Document mappedDoc = mapper.transform(payload, jsonnetVars, _outputMimeType);
         Object mappedBody = mappedDoc.canGetContentsAs(String.class) ? mappedDoc.getContentsAsString() : mappedDoc.getContentsAsObject();
 
         return mappedBody;
