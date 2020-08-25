@@ -1,6 +1,5 @@
 package com.modus.camel.datasonnet.language.model;
 
-import org.apache.camel.CamelContext;
 import org.apache.camel.Expression;
 import org.apache.camel.model.language.ExpressionDefinition;
 import org.apache.camel.spi.Metadata;

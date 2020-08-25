@@ -159,9 +159,13 @@ public class DatasonnetProcessor implements Processor {
         this.datasonnetScript = datasonnetScript;
     }
 
-    public Object processMapping(Exchange exchange, String inputMime, String outputMime) throws Exception {
-        String _inputMimeType = inputMime;
-        String _outputMimeType = outputMime;
+    public Object processMapping(Exchange exchange) throws Exception {
+        return processMapping(exchange, null, null);
+    }
+
+    public Object processMapping(Exchange exchange, String _inputMimeType, String _outputMimeType) throws Exception {
+//        String _inputMimeType = inputMime;
+//        String _outputMimeType = outputMime;
 
         if (_inputMimeType == null || "".equalsIgnoreCase(_inputMimeType.trim())) {
             //Try to auto-detect input mime type if it was not explicitly set

@@ -18,6 +18,7 @@ import org.springframework.test.context.ContextConfiguration;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.concurrent.Callable;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -86,6 +87,7 @@ public class CamelDatasonnetTest {
 
     @Test
     public void testReadJava() throws Exception {
+
         Gizmo theGizmo = new Gizmo();
         theGizmo.setName("gizmo");
         theGizmo.setQuantity(123);
@@ -123,19 +125,39 @@ public class CamelDatasonnetTest {
 
         String payload = loadResourceAsString("javaTest.json");
 
-        template.sendBody("direct:writeJava", payload);
-        Exchange exchange = mock.assertExchangeReceived(mock.getReceivedCounter() - 1);
-        Object response = exchange.getIn().getBody();
-
-        assertEquals(response, theGizmo);
+        Callable testDS = new Callable<String>() {
+            @Override
+            public String call() {
+                try {
+                    template.sendBody("direct:writeJava", payload);
+                    Exchange exchange = mock.assertExchangeReceived(mock.getReceivedCounter() - 1);
+                    Object response = exchange.getIn().getBody();
+                    assertEquals(response, theGizmo);
+                    return "OK";
+                } catch (Exception e) {
+                    return e.getMessage();
+                }
+            }
+        };
+        ConcurrentUtil.testConcurrent(testDS, 100);
     }
 
     private void runCamelTest(Object payload, String expectedJson, String uri) throws Exception {
-        template.sendBody(uri, payload);
-        Exchange exchange = mock.assertExchangeReceived(mock.getReceivedCounter() - 1);
-        String response = exchange.getIn().getBody().toString();
-//        System.out.println("RESPONSE IS " + response);
-        JSONAssert.assertEquals(expectedJson, response, true);
+        Callable testDS = new Callable<String>() {
+            @Override
+            public String call() {
+                try {
+                    template.sendBody(uri, payload);
+                    Exchange exchange = mock.assertExchangeReceived(mock.getReceivedCounter() - 1);
+                    String response = exchange.getIn().getBody().toString();
+                    JSONAssert.assertEquals(expectedJson, response, true);
+                    return "OK";
+                } catch (Exception e) {
+                    return e.getMessage();
+                }
+            }
+        };
+        ConcurrentUtil.testConcurrent(testDS, 100);
     }
 
     private String loadResourceAsString(String name) throws Exception {

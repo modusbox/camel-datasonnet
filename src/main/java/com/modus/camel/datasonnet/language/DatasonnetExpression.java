@@ -1,17 +1,14 @@
 package com.modus.camel.datasonnet.language;
 
 import com.modus.camel.datasonnet.DatasonnetProcessor;
-import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Expression;
 import org.apache.camel.RuntimeExpressionException;
-import org.apache.camel.spi.GeneratedPropertyConfigurer;
 import org.apache.camel.support.ExpressionAdapter;
-import org.apache.camel.support.component.PropertyConfigurerSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DatasonnetExpression extends ExpressionAdapter implements GeneratedPropertyConfigurer {
+public class DatasonnetExpression extends ExpressionAdapter { //implements GeneratedPropertyConfigurer {
     private String expression;
 
     private String inputMimeType;
@@ -51,19 +48,28 @@ public class DatasonnetExpression extends ExpressionAdapter implements Generated
 
     @Override
     public <T> T evaluate(Exchange exchange, Class<T> type) {
+
+        if (inputMimeType != null) {
+            exchange.setProperty("inputMimeType", inputMimeType);
+        }
+        if (outputMimeType != null) {
+            exchange.setProperty("outputMimeType", outputMimeType);
+        }
+
         try {
             if (innerExpression != null) {
                 String script = innerExpression.evaluate(exchange, String.class);
                 expression = script;
                 processor.setDatasonnetScript(script);
             }
-            Object value = processor.processMapping(exchange, getInputMimeType(), getOutputMimeType());
+            Object value = processor.processMapping(exchange);
             return exchange.getContext().getTypeConverter().convertTo(type, value);
         } catch (Exception e) {
             throw new RuntimeExpressionException("Unable to evaluate DataSonnet expression : " + expression, e);
         }
     }
 
+/*
     @Override
     public boolean configure(CamelContext camelContext, Object target, String name, Object value, boolean ignoreCase) {
         if (target != this) {
@@ -82,6 +88,7 @@ public class DatasonnetExpression extends ExpressionAdapter implements Generated
 
         return false;
     }
+*/
 
     public String getInputMimeType() {
         return inputMimeType;
