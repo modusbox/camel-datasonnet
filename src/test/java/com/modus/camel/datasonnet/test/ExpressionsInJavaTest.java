@@ -20,6 +20,7 @@ import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import static org.junit.Assert.assertEquals;
 
@@ -44,47 +45,70 @@ public class ExpressionsInJavaTest {
         @Bean
         public List<RouteBuilder> routes() {
             return Arrays.asList(
-                new DatasonnetRouteBuilder() {
-                    @Override
-                    public void configure() throws Exception {
-                        from("direct:chainExpressions")
-                                .setHeader("ScriptHeader", constant("{ hello: \"World\"}"))
-                                .setBody(datasonnet(simple("${header.ScriptHeader}")))
-                                .to("mock:direct:response");
+                    new DatasonnetRouteBuilder() {
+                        @Override
+                        public void configure() throws Exception {
+                            from("direct:chainExpressions")
+                                    .setHeader("ScriptHeader", constant("{ hello: \"World\"}"))
+                                    .setBody(datasonnet(simple("${header.ScriptHeader}")))
+                                    .to("mock:direct:response");
+                        }
+                    },
+                    new DatasonnetRouteBuilder() {
+                        @Override
+                        public void configure() throws Exception {
+                            from("direct:expressionsInJava")
+                                    .choice()
+                                    .when(datasonnet("payload == 'World'", "text/plain", "application/json"))
+                                    .setBody(datasonnet("'Hello, ' + payload", "text/plain", "text/plain"))
+                                    .otherwise()
+                                    .setBody(datasonnet("'Good bye, ' + payload", "text/plain", "text/plain"))
+                                    .end()
+                                    .to("mock:direct:response");
+                        }
                     }
-                },
-                new DatasonnetRouteBuilder() {
-                    @Override
-                    public void configure() throws Exception {
-                        from("direct:expressionsInJava")
-                                .choice()
-                                .when(datasonnet("payload == 'World'", "text/plain", "application/json"))
-                                .setBody(datasonnet("'Hello, ' + payload", "text/plain", "text/plain"))
-                                .otherwise()
-                                .setBody(datasonnet("'Good bye, ' + payload", "text/plain", "text/plain"))
-                                .end()
-                                .to("mock:direct:response");
-                    }
-                }
             );
         }
     }
 
     @Test
     public void testExpressionLanguageInJava() throws Exception {
-        endEndpoint.expectedMessageCount(1);
-        expressionsInJavaProducer.sendBody("World");
-        Exchange exchange = endEndpoint.assertExchangeReceived(endEndpoint.getReceivedCounter() - 1);
-        String response = exchange.getIn().getBody().toString();
-        assertEquals("Hello, World", response);
+        Callable testEL = new Callable<String>() {
+            @Override
+            public String call() {
+                try {
+                    endEndpoint.expectedMessageCount(1);
+                    expressionsInJavaProducer.sendBody("World");
+                    Exchange exchange = endEndpoint.assertExchangeReceived(endEndpoint.getReceivedCounter() - 1);
+                    String response = exchange.getIn().getBody().toString();
+                    assertEquals("Hello, World", response);
+                    return "OK";
+                } catch (Exception e) {
+                    return e.getMessage();
+                }
+            }
+        };
+        ConcurrentUtil.testConcurrent(testEL, 100);
     }
 
     @Test
     public void testChainExpressions() throws Exception {
-        endEndpoint.expectedMessageCount(1);
-        chainExpressionsProducer.sendBody("{}");
-        Exchange exchange = endEndpoint.assertExchangeReceived(endEndpoint.getReceivedCounter() - 1);
-        String response = exchange.getIn().getBody().toString();
-        JSONAssert.assertEquals("{\"hello\":\"World\"}", response, true);
+
+        Callable testEL = new Callable<String>() {
+            @Override
+            public String call() {
+                try {
+                    endEndpoint.expectedMessageCount(1);
+                    chainExpressionsProducer.sendBody("{}");
+                    Exchange exchange = endEndpoint.assertExchangeReceived(endEndpoint.getReceivedCounter() - 1);
+                    String response = exchange.getIn().getBody().toString();
+                    JSONAssert.assertEquals("{\"hello\":\"World\"}", response, true);
+                    return "OK";
+                } catch (Exception e) {
+                    return e.getMessage();
+                }
+            }
+        };
+        ConcurrentUtil.testConcurrent(testEL, 100);
     }
 }
