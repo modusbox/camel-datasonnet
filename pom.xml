@@ -17,7 +17,7 @@
         <camel.version>3.3.0</camel.version>
         <spring-boot.version>2.3.0.RELEASE</spring-boot.version>
         <datasonnet.version>1.0.5-SNAPSHOT</datasonnet.version>
-        <junit.version>4.12</junit.version>
+        <junit.version>4.13.1</junit.version>
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
     </properties>
 
