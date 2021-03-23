@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.modus.camel.datasonnet</groupId>
-    <artifactId>camel-datasonnet</artifactId>
-    <version>1.0.5-SNAPSHOT</version>
+    <groupId>com.datasonnet</groupId>
+    <artifactId>camel-datasonnet-connector</artifactId>
+    <version>1.0.5</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -16,7 +16,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <camel.version>3.3.0</camel.version>
         <spring-boot.version>2.3.0.RELEASE</spring-boot.version>
-        <datasonnet.version>1.0.5-SNAPSHOT</datasonnet.version>
+        <datasonnet.version>1.0.4</datasonnet.version>
         <junit.version>4.12</junit.version>
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
     </properties>
